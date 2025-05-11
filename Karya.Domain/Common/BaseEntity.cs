@@ -1,0 +1,13 @@
+﻿using Karya.Domain.Enums;
+
+namespace Karya.Domain.Common;
+
+public class BaseEntity
+{
+	public Guid Id { get; set; } = Guid.NewGuid();
+	public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+	public Guid CreatedBy { get; set; } = Guid.Empty;
+	public DateTime? ModifiedDate { get; set; }
+	public Guid? ModifiedBy { get; set; }
+	public BaseStatuses Status { get; set; } = BaseStatuses.Active;
+}

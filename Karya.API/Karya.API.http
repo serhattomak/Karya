@@ -1,0 +1,6 @@
+@Karya.API_HostAddress = http://localhost:5075
+
+GET {{Karya.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
