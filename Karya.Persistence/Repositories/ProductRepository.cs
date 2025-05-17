@@ -14,4 +14,11 @@ public class ProductRepository(AppIdentityDbContext context) : EfRepository<Prod
 			.Where(x => x.Status != BaseStatuses.Deleted && x.Status != BaseStatuses.Inactive);
 		return products;
 	}
+
+	public async Task<List<Product>> GetByIdsAsync(IEnumerable<Guid> ids)
+	{
+		return await context.Products
+			.Where(p => ids.Contains(p.Id))
+			.ToListAsync();
+	}
 }
