@@ -18,7 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\AboutPage\" />
+    <Folder Include="Features\ContactPage\" />
     <Folder Include="Features\Contact\Services\Interfaces\" />
+    <Folder Include="Features\HomePage\" />
   </ItemGroup>
 
 </Project>
