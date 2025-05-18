@@ -12,9 +12,6 @@ public class AppIdentityDbContext(DbContextOptions<AppIdentityDbContext> options
 	public DbSet<File> Files => Set<File>();
 	public DbSet<Contact> Contacts => Set<Contact>();
 	public DbSet<Page> Pages => Set<Page>();
-	public DbSet<HomePage> HomePages => Set<HomePage>();
-	public DbSet<AboutPage> AboutPages => Set<AboutPage>();
-	public DbSet<ContactPage> ContactPages => Set<ContactPage>();
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
