@@ -5,7 +5,7 @@ namespace Karya.Application.Features.Product.Services.Interfaces;
 
 public interface IProductService
 {
-	Task<Result<List<ProductDto>>> GetAllAsync();
+	Task<Result<PagedResult<ProductDto>>> GetAllAsync(PagedRequest request);
 	Task<Result<ProductDto>> GetByIdAsync(Guid id);
 	Task<Result<ProductDto>> CreateAsync(CreateProductDto productDto);
 	Task<Result<ProductDto>> UpdateAsync(UpdateProductDto productDto);

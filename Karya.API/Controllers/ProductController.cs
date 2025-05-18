@@ -1,5 +1,6 @@
 ﻿using Karya.Application.Features.Product.Dto;
 using Karya.Application.Features.Product.Services.Interfaces;
+using Karya.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Karya.API.Controllers
@@ -9,7 +10,8 @@ namespace Karya.API.Controllers
 	public class ProductController(IProductService service) : CustomBaseController
 	{
 		[HttpGet]
-		public async Task<IActionResult> GetAll() => CreateActionResult(await service.GetAllAsync());
+		public async Task<IActionResult> GetAll([FromQuery] PagedRequest request)
+			=> CreateActionResult(await service.GetAllAsync(request));
 
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetById(Guid id) => CreateActionResult(await service.GetByIdAsync(id));
