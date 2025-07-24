@@ -65,6 +65,14 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureExtensions();
 builder.Services.AddPersistenceExtensions(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowReact",
+		policy => policy.WithOrigins("http://localhost:3000")
+			.AllowAnyHeader()
+			.AllowAnyMethod());
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -84,6 +92,8 @@ if (app.Environment.IsDevelopment())
 			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
 	});
 }
+
+app.UseCors("AllowReact");
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();

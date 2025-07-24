@@ -7,9 +7,13 @@ public record UpdatePageDto(
 	PageTypes PageType,
 	string Name,
 	List<string> Titles,
-	List<string> Descriptions,
+	List<string>? Subtitles,
+	List<string>? Descriptions,
+	List<string>? ListItems,
 	List<string>? Urls,
+	string? BackgroundImageUrl,
+	string? BannerImageUrl,
 	List<Guid>? FileIds,
 	List<Guid>? ProductIds,
 	List<string>? AdditionalFields
-	);
+);

@@ -17,6 +17,15 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.IsRequired()
 			.HasMaxLength(200);
 
+		// String properties
+		builder.Property(p => p.BackgroundImageUrl)
+			.HasMaxLength(500)
+			.HasColumnType("nvarchar(500)");
+
+		builder.Property(p => p.BannerImageUrl)
+			.HasMaxLength(500)
+			.HasColumnType("nvarchar(500)");
+
 		// String List Properties
 		builder.Property(p => p.Titles)
 			.HasConversion(
@@ -28,15 +37,35 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 				c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
 				c => c.ToList()));
 
+		builder.Property(p => p.Subtitles)
+			.HasConversion(
+				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
+				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasColumnType("NVARCHAR(MAX)")
+			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
+				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+				c => c == null ? null : c.ToList()));
+
 		builder.Property(p => p.Descriptions)
 			.HasConversion(
-				v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-				v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
+				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>>(
-				(c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
-				c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c.ToList()));
+			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
+				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+				c => c == null ? null : c.ToList()));
+
+		builder.Property(p => p.ListItems)
+			.HasConversion(
+				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
+				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasColumnType("NVARCHAR(MAX)")
+			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
+				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+				c => c == null ? null : c.ToList()));
 
 		builder.Property(p => p.Urls)
 			.HasConversion(
