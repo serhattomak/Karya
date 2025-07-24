@@ -6,7 +6,7 @@ using File = Karya.Domain.Entities.File;
 
 namespace Karya.Persistence.Repositories;
 
-public class FileRepository(AppIdentityDbContext context) : EfRepository<File>(context), IFileRepository
+public class FileRepository(AppDbContext context) : EfRepository<File>(context), IFileRepository
 {
 	public async Task<IQueryable<File>> GetAllFilesAsync()
 	{

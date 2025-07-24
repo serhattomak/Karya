@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Karya.Persistence.Repositories;
 
-public class ProductRepository(AppIdentityDbContext context) : EfRepository<Product>(context), IProductRepository
+public class ProductRepository(AppDbContext context) : EfRepository<Product>(context), IProductRepository
 {
 	public async Task<IQueryable<Product>> GetAllProductsAsync()
 	{

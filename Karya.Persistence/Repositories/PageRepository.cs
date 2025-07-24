@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Karya.Persistence.Repositories;
 
-public class PageRepository(AppIdentityDbContext context) : EfRepository<Page>(context), IPageRepository
+public class PageRepository(AppDbContext context) : EfRepository<Page>(context), IPageRepository
 {
 
 	public async Task<List<Page>> GetAllByTypeAsync(PageTypes type)
