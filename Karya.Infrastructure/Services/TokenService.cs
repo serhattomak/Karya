@@ -16,6 +16,7 @@ public class TokenService(IConfiguration configuration) : ITokenService
 		{
 			new(ClaimTypes.NameIdentifier, user.Id.ToString()),
 			new(ClaimTypes.Name, user.Username),
+			new(ClaimTypes.Role, user.Role.ToString()),
 			new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
 		};

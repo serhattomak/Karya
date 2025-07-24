@@ -26,6 +26,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 			.HasMaxLength(255)
 			.HasColumnType("nvarchar(255)");
 
+		builder.Property(u => u.Role)
+			.IsRequired()
+			.HasDefaultValue(UserRoles.User);
+
 		builder.HasIndex(u => u.Username)
 			.IsUnique()
 			.HasDatabaseName("IX_Users_Username");
@@ -42,6 +46,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.Property(u => u.Status)
 			.IsRequired()
 			.HasDefaultValue(BaseStatuses.Active)
-			.HasSentinel(BaseStatuses.None); // Sentinel value eklendi
+			.HasSentinel(BaseStatuses.None);
 	}
 }

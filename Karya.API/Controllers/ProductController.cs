@@ -1,6 +1,7 @@
 ﻿using Karya.Application.Features.Product.Dto;
 using Karya.Application.Features.Product.Services.Interfaces;
 using Karya.Domain.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Karya.API.Controllers
@@ -17,12 +18,15 @@ namespace Karya.API.Controllers
 		public async Task<IActionResult> GetById(Guid id) => CreateActionResult(await service.GetByIdAsync(id));
 
 		[HttpPost]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Create(CreateProductDto productDto) => CreateActionResult(await service.CreateAsync(productDto));
 
 		[HttpPut]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Update(UpdateProductDto productDto) => CreateActionResult(await service.UpdateAsync(productDto));
 
 		[HttpDelete("{id}")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Delete(Guid id) => CreateActionResult(await service.DeleteAsync(id));
 	}
 }

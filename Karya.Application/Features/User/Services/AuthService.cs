@@ -1,6 +1,7 @@
 ﻿using Karya.Application.Common.DTOs;
 using Karya.Application.Features.User.Services.Interfaces;
 using Karya.Domain.Common;
+using Karya.Domain.Enums;
 using Karya.Domain.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
@@ -38,7 +39,8 @@ public class AuthService(IUserRepository userRepository, ITokenService tokenServ
 			var user = new Domain.Entities.User
 			{
 				Username = registerDto.Username,
-				PasswordHash = passwordHash
+				PasswordHash = passwordHash,
+				Role = UserRoles.User // Default role
 			};
 
 			// Save user to database
@@ -85,7 +87,8 @@ public class AuthService(IUserRepository userRepository, ITokenService tokenServ
 			{
 				UserId = user.Id,
 				Username = user.Username,
-				Token = token
+				Token = token,
+				Role = user.Role
 			};
 
 			return Result<AuthDto>.Success(authDto);
