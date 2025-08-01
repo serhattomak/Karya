@@ -35,5 +35,7 @@ public class GeneralMapping : Profile
 		CreateMap<UpdatePageDto, Page>()
 			.ForMember(dest => dest.FileIds, opt => opt.MapFrom(src => src.FileIds))
 			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds));
+		CreateMap<UpdatePageProductOrderDto, Page>()
+			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds));
 	}
 }

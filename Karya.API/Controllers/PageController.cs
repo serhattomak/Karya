@@ -30,6 +30,10 @@ namespace Karya.API.Controllers
 		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> UpdatePage([FromBody] UpdatePageDto pageDto) => CreateActionResult(await service.UpdatePageAsync(pageDto));
 
+		[HttpPut("product-order")]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> UpdatePageProductOrder([FromBody] UpdatePageProductOrderDto updateDto) => CreateActionResult(await service.UpdatePageProductOrderAsync(updateDto));
+
 		[HttpDelete("{id}")]
 		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> DeletePage(Guid id) => CreateActionResult(await service.DeletePageAsync(id));

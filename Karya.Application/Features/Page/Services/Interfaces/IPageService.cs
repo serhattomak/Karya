@@ -12,4 +12,5 @@ public interface IPageService
 	Task<Result<PageDto>> CreatePageAsync(CreatePageDto pageDto);
 	Task<Result<PageDto>> UpdatePageAsync(UpdatePageDto pageDto);
 	Task<Result> DeletePageAsync(Guid id);
+	Task<Result<PageDto>> UpdatePageProductOrderAsync(UpdatePageProductOrderDto updateDto);
 }

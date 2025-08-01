@@ -26,16 +26,23 @@ public class PageService(
 		{
 			var products = await productRepository.GetByIdsAsync(page.ProductIds);
 			var productDtos = mapper.Map<List<ProductDto>>(products);
-			foreach (var productDto in productDtos)
+
+			var orderedProductDtos = new List<ProductDto>();
+			foreach (var productId in page.ProductIds)
 			{
-				var product = products.First(p => p.Id == productDto.Id);
-				if (product.FileIds != null && product.FileIds.Any())
+				var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
+				if (productDto != null)
 				{
-					var files = await fileRepository.GetByIdsAsync(product.FileIds);
-					productDto.Files = mapper.Map<List<FileDto>>(files);
+					var product = products.First(p => p.Id == productDto.Id);
+					if (product.FileIds != null && product.FileIds.Any())
+					{
+						var files = await fileRepository.GetByIdsAsync(product.FileIds);
+						productDto.Files = mapper.Map<List<FileDto>>(files);
+					}
+					orderedProductDtos.Add(productDto);
 				}
 			}
-			pageDto.Products = productDtos;
+			pageDto.Products = orderedProductDtos;
 		}
 
 		if (page.FileIds != null && page.FileIds.Any())
@@ -62,16 +69,23 @@ public class PageService(
 			{
 				var products = await productRepository.GetByIdsAsync(page.ProductIds);
 				var productDtos = mapper.Map<List<ProductDto>>(products);
-				foreach (var productDto in productDtos)
+
+				var orderedProductDtos = new List<ProductDto>();
+				foreach (var productId in page.ProductIds)
 				{
-					var product = products.First(p => p.Id == productDto.Id);
-					if (product.FileIds != null && product.FileIds.Any())
+					var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
+					if (productDto != null)
 					{
-						var files = await fileRepository.GetByIdsAsync(product.FileIds);
-						productDto.Files = mapper.Map<List<FileDto>>(files);
+						var product = products.First(p => p.Id == productDto.Id);
+						if (product.FileIds != null && product.FileIds.Any())
+						{
+							var files = await fileRepository.GetByIdsAsync(product.FileIds);
+							productDto.Files = mapper.Map<List<FileDto>>(files);
+						}
+						orderedProductDtos.Add(productDto);
 					}
 				}
-				pageDto.Products = productDtos;
+				pageDto.Products = orderedProductDtos;
 			}
 			if (page.FileIds != null && page.FileIds.Any())
 			{
@@ -105,16 +119,23 @@ public class PageService(
 			{
 				var products = await productRepository.GetByIdsAsync(page.ProductIds);
 				var productDtos = mapper.Map<List<ProductDto>>(products);
-				foreach (var productDto in productDtos)
+
+				var orderedProductDtos = new List<ProductDto>();
+				foreach (var productId in page.ProductIds)
 				{
-					var product = products.First(p => p.Id == productDto.Id);
-					if (product.FileIds != null && product.FileIds.Any())
+					var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
+					if (productDto != null)
 					{
-						var files = await fileRepository.GetByIdsAsync(product.FileIds);
-						productDto.Files = mapper.Map<List<FileDto>>(files);
+						var product = products.First(p => p.Id == productDto.Id);
+						if (product.FileIds != null && product.FileIds.Any())
+						{
+							var files = await fileRepository.GetByIdsAsync(product.FileIds);
+							productDto.Files = mapper.Map<List<FileDto>>(files);
+						}
+						orderedProductDtos.Add(productDto);
 					}
 				}
-				pageDto.Products = productDtos;
+				pageDto.Products = orderedProductDtos;
 			}
 			if (page.FileIds != null && page.FileIds.Any())
 			{
@@ -163,5 +184,30 @@ public class PageService(
 		repository.UpdateAsync(page);
 		await repository.SaveChangesAsync();
 		return Result.Success(HttpStatusCode.NoContent);
+	}
+
+	public async Task<Result<PageDto>> UpdatePageProductOrderAsync(UpdatePageProductOrderDto updateDto)
+	{
+		var page = await repository.GetByIdAsync(updateDto.PageId);
+		if (page == null)
+			return Result<PageDto>.Failure("Page not found");
+
+		if (updateDto.ProductIds != null && updateDto.ProductIds.Any())
+		{
+			var existingProducts = await productRepository.GetByIdsAsync(updateDto.ProductIds);
+			var existingProductIds = existingProducts.Select(p => p.Id).ToHashSet();
+
+			var invalidProductIds = updateDto.ProductIds.Where(id => !existingProductIds.Contains(id)).ToList();
+			if (invalidProductIds.Any())
+				return Result<PageDto>.Failure($"Invalid product IDs: {string.Join(", ", invalidProductIds)}");
+		}
+
+		page.ProductIds = updateDto.ProductIds;
+		page.ModifiedDate = DateTime.UtcNow;
+
+		repository.UpdateAsync(page);
+		await repository.SaveChangesAsync();
+
+		return await GetPageByIdAsync(page.Id);
 	}
 }
