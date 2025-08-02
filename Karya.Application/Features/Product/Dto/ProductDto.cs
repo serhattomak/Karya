@@ -9,6 +9,7 @@ public class ProductDto()
 	public List<string> Titles { get; set; } = [];
 	public List<string>? Subtitles { get; set; } = [];
 	public List<string> Descriptions { get; set; } = [];
+	public List<string>? ListTitles { get; set; } = [];
 	public List<string>? ListItems { get; set; } = [];
 	public List<string>? Urls { get; set; } = [];
 	public string? BannerImageUrl { get; set; }

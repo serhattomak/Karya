@@ -8,6 +8,7 @@ public record CreatePageDto(
 	List<string> Titles,
 	List<string>? Subtitles,
 	List<string>? Descriptions,
+	List<string>? ListTitles,
 	List<string>? ListItems,
 	List<string>? Urls,
 	string? BackgroundImageUrl,

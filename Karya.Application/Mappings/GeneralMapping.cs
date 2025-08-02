@@ -15,6 +15,7 @@ public class GeneralMapping : Profile
 			.ForMember(dest => dest.Titles, opt => opt.MapFrom(src => src.Titles))
 			.ForMember(dest => dest.Subtitles, opt => opt.MapFrom(src => src.Subtitles))
 			.ForMember(dest => dest.Descriptions, opt => opt.MapFrom(src => src.Descriptions))
+			.ForMember(dest => dest.ListTitles, opt => opt.MapFrom(src => src.ListTitles))
 			.ForMember(dest => dest.ListItems, opt => opt.MapFrom(src => src.ListItems))
 			.ForMember(dest => dest.Urls, opt => opt.MapFrom(src => src.Urls))
 			.ForMember(dest => dest.BannerImageUrl, opt => opt.MapFrom(src => src.BannerImageUrl))
@@ -31,6 +32,7 @@ public class GeneralMapping : Profile
 			.ForMember(dest => dest.Titles, opt => opt.MapFrom(src => src.Titles))
 			.ForMember(dest => dest.Subtitles, opt => opt.MapFrom(src => src.Subtitles))
 			.ForMember(dest => dest.Descriptions, opt => opt.MapFrom(src => src.Descriptions))
+			.ForMember(dest => dest.ListTitles, opt => opt.MapFrom(src => src.ListTitles))
 			.ForMember(dest => dest.ListItems, opt => opt.MapFrom(src => src.ListItems))
 			.ForMember(dest => dest.Urls, opt => opt.MapFrom(src => src.Urls))
 			.ForMember(dest => dest.BannerImageUrl, opt => opt.MapFrom(src => src.BannerImageUrl))
@@ -49,6 +51,7 @@ public class GeneralMapping : Profile
 		CreateMap<Page, PageDto>()
 			.ForMember(dest => dest.Titles, opt => opt.MapFrom(src => src.Titles))
 			.ForMember(dest => dest.Descriptions, opt => opt.MapFrom(src => src.Descriptions))
+			.ForMember(dest => dest.ListTitles, opt => opt.MapFrom(src => src.ListTitles))
 			.ForMember(dest => dest.Urls, opt => opt.MapFrom(src => src.Urls))
 			.ReverseMap();
 		CreateMap<CreatePageDto, Page>()
