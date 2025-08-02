@@ -6,6 +6,7 @@ using Karya.Domain.Enums;
 using Karya.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Security.Cryptography;
 
 namespace Karya.Application.Features.File.Services;
 
@@ -19,6 +20,7 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 		var fileDtos = mapper.Map<List<FileDto>>(files);
 		return Result<List<FileDto>>.Success(fileDtos);
 	}
+
 	public async Task<Result<FileDto>> GetByIdAsync(Guid id)
 	{
 		var file = await repository.GetByIdAsync(id);
@@ -30,6 +32,19 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 
 	public async Task<Result<FileDto>> SaveFileAsync(IFormFile file)
 	{
+		string fileHash;
+		using (var stream = file.OpenReadStream())
+		{
+			fileHash = await ComputeFileHashAsync(stream);
+		}
+
+		var existingFile = await repository.GetByHashAsync(fileHash);
+		if (existingFile != null)
+		{
+			var existingFileDto = mapper.Map<FileDto>(existingFile);
+			return Result<FileDto>.Success(existingFileDto);
+		}
+
 		var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
 		if (!Directory.Exists(rootPath))
 			Directory.CreateDirectory(rootPath);
@@ -49,7 +64,8 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 			Name = file.FileName,
 			Path = relativePath,
 			ContentType = file.ContentType,
-			Size = file.Length
+			Size = file.Length,
+			Hash = fileHash
 		};
 
 		await repository.AddAsync(fileEntity);
@@ -107,5 +123,12 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 		repository.UpdateAsync(file);
 		await repository.SaveChangesAsync();
 		return Result.Success(HttpStatusCode.NoContent);
+	}
+
+	private static async Task<string> ComputeFileHashAsync(Stream stream)
+	{
+		using var sha256 = SHA256.Create();
+		var hashBytes = await Task.Run(() => sha256.ComputeHash(stream));
+		return Convert.ToHexString(hashBytes);
 	}
 }

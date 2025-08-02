@@ -21,5 +21,12 @@ public class FileConfiguration : IEntityTypeConfiguration<File>
 		builder.Property(f => f.ContentType)
 			.IsRequired()
 			.HasMaxLength(50);
+		builder.Property(f => f.Hash)
+			.IsRequired()
+			.HasMaxLength(64);
+
+		builder.HasIndex(f => f.Hash)
+			.IsUnique()
+			.HasDatabaseName("IX_Files_Hash");
 	}
 }

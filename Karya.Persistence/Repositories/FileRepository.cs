@@ -14,8 +14,17 @@ public class FileRepository(AppDbContext context) : EfRepository<File>(context),
 			.Where(x => x.Status != BaseStatuses.Deleted && x.Status != BaseStatuses.Inactive);
 		return files;
 	}
+
 	public async Task<List<File>> GetByIdsAsync(IEnumerable<Guid> ids)
 	{
 		return await _context.Files.Where(f => ids.Contains(f.Id)).ToListAsync();
+	}
+
+	public async Task<File?> GetByHashAsync(string hash)
+	{
+		return await _context.Files
+			.FirstOrDefaultAsync(f => f.Hash == hash &&
+									  f.Status != BaseStatuses.Deleted &&
+									  f.Status != BaseStatuses.Inactive);
 	}
 }
