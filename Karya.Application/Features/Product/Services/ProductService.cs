@@ -33,8 +33,14 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		var productDtos = mapper.Map<List<ProductDto>>(products);
 
 		var allFileIds = products
-			.Where(p => p.FileIds != null)
-			.SelectMany(p => p.FileIds!)
+			.SelectMany(p => new List<Guid>[]
+			{
+				p.FileIds ?? [],
+				p.DocumentImageIds ?? [],
+				p.ProductDetailImageIds ?? []
+			})
+			.SelectMany(ids => ids)
+			.Concat(products.Where(p => p.ProductImageId.HasValue).Select(p => p.ProductImageId!.Value))
 			.Distinct()
 			.ToList();
 
@@ -46,6 +52,8 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 		foreach (var productDto in productDtos)
 		{
+			var product = products.First(p => p.Id == productDto.Id);
+
 			if (productDto.FileIds != null && productDto.FileIds.Any())
 			{
 				productDto.Files = fileDtos
@@ -55,6 +63,33 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 			else
 			{
 				productDto.Files = [];
+			}
+
+			if (productDto.DocumentImageIds != null && productDto.DocumentImageIds.Any())
+			{
+				productDto.DocumentImages = fileDtos
+					.Where(f => productDto.DocumentImageIds.Contains(f.Id))
+					.ToList();
+			}
+			else
+			{
+				productDto.DocumentImages = [];
+			}
+
+			if (productDto.ProductDetailImageIds != null && productDto.ProductDetailImageIds.Any())
+			{
+				productDto.ProductImages = fileDtos
+					.Where(f => productDto.ProductDetailImageIds.Contains(f.Id))
+					.ToList();
+			}
+			else
+			{
+				productDto.ProductImages = [];
+			}
+
+			if (product.ProductImageId.HasValue)
+			{
+				productDto.ProductImage = fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value);
 			}
 		}
 
@@ -68,7 +103,6 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		return Result<PagedResult<ProductDto>>.Success(pagedResult);
 	}
 
-
 	public async Task<Result<ProductDto>> GetByIdAsync(Guid id)
 	{
 		var product = await repository.GetByIdAsync(id);
@@ -77,10 +111,50 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 		var productDto = mapper.Map<ProductDto>(product);
 
+		var allFileIds = new List<Guid>();
+
 		if (product.FileIds != null && product.FileIds.Any())
+			allFileIds.AddRange(product.FileIds);
+
+		if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
+			allFileIds.AddRange(product.DocumentImageIds);
+
+		if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
+			allFileIds.AddRange(product.ProductDetailImageIds);
+
+		if (product.ProductImageId.HasValue)
+			allFileIds.Add(product.ProductImageId.Value);
+
+		if (allFileIds.Any())
 		{
-			var files = await fileRepository.GetByIdsAsync(product.FileIds);
-			productDto.Files = mapper.Map<List<FileDto>>(files);
+			var files = await fileRepository.GetByIdsAsync(allFileIds.Distinct());
+			var fileDtos = mapper.Map<List<FileDto>>(files);
+
+			if (product.FileIds != null && product.FileIds.Any())
+			{
+				productDto.Files = fileDtos
+					.Where(f => product.FileIds.Contains(f.Id))
+					.ToList();
+			}
+
+			if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
+			{
+				productDto.DocumentImages = fileDtos
+					.Where(f => product.DocumentImageIds.Contains(f.Id))
+					.ToList();
+			}
+
+			if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
+			{
+				productDto.ProductImages = fileDtos
+					.Where(f => product.ProductDetailImageIds.Contains(f.Id))
+					.ToList();
+			}
+
+			if (product.ProductImageId.HasValue)
+			{
+				productDto.ProductImage = fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value);
+			}
 		}
 
 		return Result<ProductDto>.Success(productDto);

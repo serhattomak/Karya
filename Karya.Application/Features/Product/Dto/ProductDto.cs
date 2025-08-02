@@ -11,6 +11,13 @@ public class ProductDto()
 	public List<string> Descriptions { get; set; } = [];
 	public List<string>? ListItems { get; set; } = [];
 	public List<string>? Urls { get; set; } = [];
+	public string? BannerImageUrl { get; set; }
+	public Guid? ProductImageId { get; set; }
+	public List<Guid>? DocumentImageIds { get; set; } = [];
+	public List<Guid>? ProductDetailImageIds { get; set; } = [];
 	public List<Guid> FileIds { get; set; } = [];
 	public List<FileDto> Files { get; set; } = [];
+	public FileDto? ProductImage { get; set; }
+	public List<FileDto> DocumentImages { get; set; } = [];
+	public List<FileDto> ProductImages { get; set; } = [];
 }

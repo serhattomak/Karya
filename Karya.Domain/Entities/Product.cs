@@ -10,5 +10,9 @@ public class Product : BaseEntity
 	public List<string>? Descriptions { get; set; } = [];
 	public List<string>? ListItems { get; set; } = [];
 	public List<string>? Urls { get; set; } = [];
+	public string? BannerImageUrl { get; set; }
+	public Guid? ProductImageId { get; set; }
+	public List<Guid>? DocumentImageIds { get; set; } = [];
+	public List<Guid>? ProductDetailImageIds { get; set; } = [];
 	public List<Guid>? FileIds { get; set; } = [];
 }
