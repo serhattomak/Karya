@@ -17,6 +17,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 			.IsRequired()
 			.HasMaxLength(200);
 
+		builder.HasIndex(p => p.Name)
+			.IsUnique()
+			.HasDatabaseName("IX_Products_Name");
+
 		// String property
 		builder.Property(p => p.BannerImageUrl)
 			.HasMaxLength(500)
@@ -25,7 +29,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 		// Guid property for single product image
 		builder.Property(p => p.ProductImageId)
 			.HasColumnType("uniqueidentifier");
-
 
 		// String List Properties
 		builder.Property(p => p.Titles)

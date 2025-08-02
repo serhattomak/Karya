@@ -9,7 +9,6 @@ namespace Karya.Persistence.Repositories;
 
 public class PageRepository(AppDbContext context) : EfRepository<Page>(context), IPageRepository
 {
-
 	public async Task<List<Page>> GetAllByTypeAsync(PageTypes type)
 	{
 		var pages = context.Pages.AsNoTracking()
@@ -64,4 +63,11 @@ public class PageRepository(AppDbContext context) : EfRepository<Page>(context),
 		return new PagedResult<Page>(items, totalCount, request.PageIndex, request.PageSize);
 	}
 
+	public async Task<Page?> GetByNameAsync(string name)
+	{
+		return await context.Pages
+			.FirstOrDefaultAsync(p => p.Name == name &&
+									p.Status != BaseStatuses.Deleted &&
+									p.Status != BaseStatuses.Inactive);
+	}
 }

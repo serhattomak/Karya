@@ -17,6 +17,9 @@ namespace Karya.API.Controllers
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetById(Guid id) => CreateActionResult(await service.GetByIdAsync(id));
 
+		[HttpGet("name/{name}")]
+		public async Task<IActionResult> GetPageByName(string name) => CreateActionResult(await service.GetByNameAsync(name));
+
 		[HttpPost]
 		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Create(CreateProductDto productDto) => CreateActionResult(await service.CreateAsync(productDto));

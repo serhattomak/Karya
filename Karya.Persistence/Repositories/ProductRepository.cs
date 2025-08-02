@@ -21,4 +21,12 @@ public class ProductRepository(AppDbContext context) : EfRepository<Product>(con
 			.Where(p => ids.Contains(p.Id))
 			.ToListAsync();
 	}
+
+	public async Task<Product?> GetByNameAsync(string name)
+	{
+		return await context.Products
+			.FirstOrDefaultAsync(p => p.Name == name &&
+									  p.Status != BaseStatuses.Deleted &&
+									  p.Status != BaseStatuses.Inactive);
+	}
 }

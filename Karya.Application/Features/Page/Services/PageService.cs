@@ -154,8 +154,57 @@ public class PageService(
 		return Result<PagedResult<PageDto>>.Success(pagedResult);
 	}
 
+	public async Task<Result<PageDto>> GetPageByNameAsync(string name)
+	{
+		if (string.IsNullOrWhiteSpace(name))
+			return Result<PageDto>.Failure("Page name cannot be empty");
+
+		var page = await repository.GetByNameAsync(name);
+		if (page == null)
+			return Result<PageDto>.Failure($"Page with name '{name}' not found");
+
+		var pageDto = mapper.Map<PageDto>(page);
+
+		if (page.ProductIds != null && page.ProductIds.Any())
+		{
+			var products = await productRepository.GetByIdsAsync(page.ProductIds);
+			var productDtos = mapper.Map<List<ProductDto>>(products);
+
+			var orderedProductDtos = new List<ProductDto>();
+			foreach (var productId in page.ProductIds)
+			{
+				var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
+				if (productDto != null)
+				{
+					var product = products.First(p => p.Id == productDto.Id);
+					if (product.FileIds != null && product.FileIds.Any())
+					{
+						var files = await fileRepository.GetByIdsAsync(product.FileIds);
+						productDto.Files = mapper.Map<List<FileDto>>(files);
+					}
+					orderedProductDtos.Add(productDto);
+				}
+			}
+			pageDto.Products = orderedProductDtos;
+		}
+
+		if (page.FileIds != null && page.FileIds.Any())
+		{
+			var files = await fileRepository.GetByIdsAsync(page.FileIds);
+			pageDto.Files = mapper.Map<List<FileDto>>(files);
+		}
+
+		return Result<PageDto>.Success(pageDto);
+	}
+
 	public async Task<Result<PageDto>> CreatePageAsync(CreatePageDto pageDto)
 	{
+		var existingPage = await repository.GetByNameAsync(pageDto.Name);
+		if (existingPage != null)
+		{
+			return Result<PageDto>.Failure($"Page with name '{pageDto.Name}' already exists");
+		}
+
 		var page = mapper.Map<Domain.Entities.Page>(pageDto);
 		await repository.AddAsync(page);
 		await repository.SaveChangesAsync();
@@ -167,6 +216,13 @@ public class PageService(
 		var page = await repository.GetByIdAsync(pageDto.Id);
 		if (page == null)
 			return Result<PageDto>.Failure("Page not found");
+
+		var existingPage = await repository.GetByNameAsync(pageDto.Name);
+		if (existingPage != null && existingPage.Id != pageDto.Id)
+		{
+			return Result<PageDto>.Failure($"Page with name '{pageDto.Name}' already exists");
+		}
+
 		mapper.Map(pageDto, page);
 		page.ModifiedDate = DateTime.UtcNow;
 		repository.UpdateAsync(page);

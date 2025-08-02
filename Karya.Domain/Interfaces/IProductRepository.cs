@@ -6,4 +6,5 @@ public interface IProductRepository : IRepository<Product>
 {
 	Task<IQueryable<Product>> GetAllProductsAsync();
 	Task<List<Product>> GetByIdsAsync(IEnumerable<Guid> ids);
+	Task<Product?> GetByNameAsync(string name);
 }

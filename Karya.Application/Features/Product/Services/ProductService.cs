@@ -160,8 +160,74 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		return Result<ProductDto>.Success(productDto);
 	}
 
+	public async Task<Result<ProductDto>> GetByNameAsync(string name)
+	{
+		if (string.IsNullOrWhiteSpace(name))
+			return Result<ProductDto>.Failure("Product name cannot be empty");
+
+		var product = await repository.GetByNameAsync(name);
+		if (product == null)
+			return Result<ProductDto>.Failure($"Product with name '{name}' not found");
+
+		var productDto = mapper.Map<ProductDto>(product);
+
+		var allFileIds = new List<Guid>();
+
+		if (product.FileIds != null && product.FileIds.Any())
+			allFileIds.AddRange(product.FileIds);
+
+		if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
+			allFileIds.AddRange(product.DocumentImageIds);
+
+		if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
+			allFileIds.AddRange(product.ProductDetailImageIds);
+
+		if (product.ProductImageId.HasValue)
+			allFileIds.Add(product.ProductImageId.Value);
+
+		if (allFileIds.Any())
+		{
+			var files = await fileRepository.GetByIdsAsync(allFileIds.Distinct());
+			var fileDtos = mapper.Map<List<FileDto>>(files);
+
+			if (product.FileIds != null && product.FileIds.Any())
+			{
+				productDto.Files = fileDtos
+					.Where(f => product.FileIds.Contains(f.Id))
+					.ToList();
+			}
+
+			if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
+			{
+				productDto.DocumentImages = fileDtos
+					.Where(f => product.DocumentImageIds.Contains(f.Id))
+					.ToList();
+			}
+
+			if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
+			{
+				productDto.ProductImages = fileDtos
+					.Where(f => product.ProductDetailImageIds.Contains(f.Id))
+					.ToList();
+			}
+
+			if (product.ProductImageId.HasValue)
+			{
+				productDto.ProductImage = fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value);
+			}
+		}
+
+		return Result<ProductDto>.Success(productDto);
+	}
+
 	public async Task<Result<ProductDto>> CreateAsync(CreateProductDto productDto)
 	{
+		var existingProduct = await repository.GetByNameAsync(productDto.Name);
+		if (existingProduct != null)
+		{
+			return Result<ProductDto>.Failure($"Product with name '{productDto.Name}' already exists");
+		}
+
 		var product = mapper.Map<Domain.Entities.Product>(productDto);
 		await repository.AddAsync(product);
 		await repository.SaveChangesAsync();
@@ -174,6 +240,12 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		var product = await repository.GetByIdAsync(productDto.Id);
 		if (product == null)
 			return Result<ProductDto>.Failure("Product not found");
+
+		var existingProduct = await repository.GetByNameAsync(productDto.Name);
+		if (existingProduct != null && existingProduct.Id != productDto.Id)
+		{
+			return Result<ProductDto>.Failure($"Product with name '{productDto.Name}' already exists");
+		}
 
 		mapper.Map(productDto, product);
 		product.ModifiedDate = DateTime.UtcNow;
