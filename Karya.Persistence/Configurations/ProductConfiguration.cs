@@ -17,9 +17,17 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 			.IsRequired()
 			.HasMaxLength(200);
 
+		builder.Property(p => p.Slug)
+			.IsRequired()
+			.HasMaxLength(250);
+
 		builder.HasIndex(p => p.Name)
 			.IsUnique()
 			.HasDatabaseName("IX_Products_Name");
+
+		builder.HasIndex(p => p.Slug)
+			.IsUnique()
+			.HasDatabaseName("IX_Products_Slug");
 
 		// String property
 		builder.Property(p => p.BannerImageUrl)

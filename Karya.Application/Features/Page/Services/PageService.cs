@@ -21,37 +21,32 @@ public class PageService(
 		var page = await repository.GetByIdAsync(id);
 		if (page == null)
 			return Result<PageDto>.Failure("Page not found");
-		var pageDto = mapper.Map<PageDto>(page);
-		if (page.ProductIds != null && page.ProductIds.Any())
-		{
-			var products = await productRepository.GetByIdsAsync(page.ProductIds);
-			var productDtos = mapper.Map<List<ProductDto>>(products);
 
-			var orderedProductDtos = new List<ProductDto>();
-			foreach (var productId in page.ProductIds)
-			{
-				var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
-				if (productDto != null)
-				{
-					var product = products.First(p => p.Id == productDto.Id);
-					if (product.FileIds != null && product.FileIds.Any())
-					{
-						var files = await fileRepository.GetByIdsAsync(product.FileIds);
-						productDto.Files = mapper.Map<List<FileDto>>(files);
-					}
-					orderedProductDtos.Add(productDto);
-				}
-			}
-			pageDto.Products = orderedProductDtos;
-		}
+		return await MapPageToDto(page);
+	}
 
-		if (page.FileIds != null && page.FileIds.Any())
-		{
-			var files = await fileRepository.GetByIdsAsync(page.FileIds);
-			pageDto.Files = mapper.Map<List<FileDto>>(files);
-		}
+	public async Task<Result<PageDto>> GetPageByNameAsync(string name)
+	{
+		if (string.IsNullOrWhiteSpace(name))
+			return Result<PageDto>.Failure("Page name cannot be empty");
 
-		return Result<PageDto>.Success(pageDto);
+		var page = await repository.GetByNameAsync(name);
+		if (page == null)
+			return Result<PageDto>.Failure($"Page with name '{name}' not found");
+
+		return await MapPageToDto(page);
+	}
+
+	public async Task<Result<PageDto>> GetPageBySlugAsync(string slug)
+	{
+		if (string.IsNullOrWhiteSpace(slug))
+			return Result<PageDto>.Failure("Page slug cannot be empty");
+
+		var page = await repository.GetBySlugAsync(slug);
+		if (page == null)
+			return Result<PageDto>.Failure($"Page with slug '{slug}' not found");
+
+		return await MapPageToDto(page);
 	}
 
 	public async Task<Result<PagedResult<PageDto>>> GetAllPagesByTypeAsync(PageTypes type, PagedRequest request)
@@ -65,33 +60,7 @@ public class PageService(
 		foreach (var pageDto in pageDtos)
 		{
 			var page = pagedPages.Items.First(p => p.Id == pageDto.Id);
-			if (page.ProductIds != null && page.ProductIds.Any())
-			{
-				var products = await productRepository.GetByIdsAsync(page.ProductIds);
-				var productDtos = mapper.Map<List<ProductDto>>(products);
-
-				var orderedProductDtos = new List<ProductDto>();
-				foreach (var productId in page.ProductIds)
-				{
-					var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
-					if (productDto != null)
-					{
-						var product = products.First(p => p.Id == productDto.Id);
-						if (product.FileIds != null && product.FileIds.Any())
-						{
-							var files = await fileRepository.GetByIdsAsync(product.FileIds);
-							productDto.Files = mapper.Map<List<FileDto>>(files);
-						}
-						orderedProductDtos.Add(productDto);
-					}
-				}
-				pageDto.Products = orderedProductDtos;
-			}
-			if (page.FileIds != null && page.FileIds.Any())
-			{
-				var files = await fileRepository.GetByIdsAsync(page.FileIds);
-				pageDto.Files = mapper.Map<List<FileDto>>(files);
-			}
+			await LoadPageRelatedData(page, pageDto);
 		}
 
 		var pagedResult = new PagedResult<PageDto>(
@@ -115,33 +84,7 @@ public class PageService(
 		foreach (var pageDto in pageDtos)
 		{
 			var page = pagedPages.Items.First(p => p.Id == pageDto.Id);
-			if (page.ProductIds != null && page.ProductIds.Any())
-			{
-				var products = await productRepository.GetByIdsAsync(page.ProductIds);
-				var productDtos = mapper.Map<List<ProductDto>>(products);
-
-				var orderedProductDtos = new List<ProductDto>();
-				foreach (var productId in page.ProductIds)
-				{
-					var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
-					if (productDto != null)
-					{
-						var product = products.First(p => p.Id == productDto.Id);
-						if (product.FileIds != null && product.FileIds.Any())
-						{
-							var files = await fileRepository.GetByIdsAsync(product.FileIds);
-							productDto.Files = mapper.Map<List<FileDto>>(files);
-						}
-						orderedProductDtos.Add(productDto);
-					}
-				}
-				pageDto.Products = orderedProductDtos;
-			}
-			if (page.FileIds != null && page.FileIds.Any())
-			{
-				var files = await fileRepository.GetByIdsAsync(page.FileIds);
-				pageDto.Files = mapper.Map<List<FileDto>>(files);
-			}
+			await LoadPageRelatedData(page, pageDto);
 		}
 
 		var pagedResult = new PagedResult<PageDto>(
@@ -154,55 +97,18 @@ public class PageService(
 		return Result<PagedResult<PageDto>>.Success(pagedResult);
 	}
 
-	public async Task<Result<PageDto>> GetPageByNameAsync(string name)
-	{
-		if (string.IsNullOrWhiteSpace(name))
-			return Result<PageDto>.Failure("Page name cannot be empty");
-
-		var page = await repository.GetByNameAsync(name);
-		if (page == null)
-			return Result<PageDto>.Failure($"Page with name '{name}' not found");
-
-		var pageDto = mapper.Map<PageDto>(page);
-
-		if (page.ProductIds != null && page.ProductIds.Any())
-		{
-			var products = await productRepository.GetByIdsAsync(page.ProductIds);
-			var productDtos = mapper.Map<List<ProductDto>>(products);
-
-			var orderedProductDtos = new List<ProductDto>();
-			foreach (var productId in page.ProductIds)
-			{
-				var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
-				if (productDto != null)
-				{
-					var product = products.First(p => p.Id == productDto.Id);
-					if (product.FileIds != null && product.FileIds.Any())
-					{
-						var files = await fileRepository.GetByIdsAsync(product.FileIds);
-						productDto.Files = mapper.Map<List<FileDto>>(files);
-					}
-					orderedProductDtos.Add(productDto);
-				}
-			}
-			pageDto.Products = orderedProductDtos;
-		}
-
-		if (page.FileIds != null && page.FileIds.Any())
-		{
-			var files = await fileRepository.GetByIdsAsync(page.FileIds);
-			pageDto.Files = mapper.Map<List<FileDto>>(files);
-		}
-
-		return Result<PageDto>.Success(pageDto);
-	}
-
 	public async Task<Result<PageDto>> CreatePageAsync(CreatePageDto pageDto)
 	{
-		var existingPage = await repository.GetByNameAsync(pageDto.Name);
-		if (existingPage != null)
+		var existingPageByName = await repository.GetByNameAsync(pageDto.Name);
+		if (existingPageByName != null)
 		{
 			return Result<PageDto>.Failure($"Page with name '{pageDto.Name}' already exists");
+		}
+
+		var existingPageBySlug = await repository.GetBySlugAsync(pageDto.Slug);
+		if (existingPageBySlug != null)
+		{
+			return Result<PageDto>.Failure($"Page with slug '{pageDto.Slug}' already exists");
 		}
 
 		var page = mapper.Map<Domain.Entities.Page>(pageDto);
@@ -217,10 +123,16 @@ public class PageService(
 		if (page == null)
 			return Result<PageDto>.Failure("Page not found");
 
-		var existingPage = await repository.GetByNameAsync(pageDto.Name);
-		if (existingPage != null && existingPage.Id != pageDto.Id)
+		var existingPageByName = await repository.GetByNameAsync(pageDto.Name);
+		if (existingPageByName != null && existingPageByName.Id != pageDto.Id)
 		{
 			return Result<PageDto>.Failure($"Page with name '{pageDto.Name}' already exists");
+		}
+
+		var existingPageBySlug = await repository.GetBySlugAsync(pageDto.Slug);
+		if (existingPageBySlug != null && existingPageBySlug.Id != pageDto.Id)
+		{
+			return Result<PageDto>.Failure($"Page with slug '{pageDto.Slug}' already exists");
 		}
 
 		mapper.Map(pageDto, page);
@@ -265,5 +177,44 @@ public class PageService(
 		await repository.SaveChangesAsync();
 
 		return await GetPageByIdAsync(page.Id);
+	}
+
+	private async Task<Result<PageDto>> MapPageToDto(Domain.Entities.Page page)
+	{
+		var pageDto = mapper.Map<PageDto>(page);
+		await LoadPageRelatedData(page, pageDto);
+		return Result<PageDto>.Success(pageDto);
+	}
+
+	private async Task LoadPageRelatedData(Domain.Entities.Page page, PageDto pageDto)
+	{
+		if (page.ProductIds != null && page.ProductIds.Any())
+		{
+			var products = await productRepository.GetByIdsAsync(page.ProductIds);
+			var productDtos = mapper.Map<List<ProductDto>>(products);
+
+			var orderedProductDtos = new List<ProductDto>();
+			foreach (var productId in page.ProductIds)
+			{
+				var productDto = productDtos.FirstOrDefault(p => p.Id == productId);
+				if (productDto != null)
+				{
+					var product = products.First(p => p.Id == productDto.Id);
+					if (product.FileIds != null && product.FileIds.Any())
+					{
+						var files = await fileRepository.GetByIdsAsync(product.FileIds);
+						productDto.Files = mapper.Map<List<FileDto>>(files);
+					}
+					orderedProductDtos.Add(productDto);
+				}
+			}
+			pageDto.Products = orderedProductDtos;
+		}
+
+		if (page.FileIds != null && page.FileIds.Any())
+		{
+			var files = await fileRepository.GetByIdsAsync(page.FileIds);
+			pageDto.Files = mapper.Map<List<FileDto>>(files);
+		}
 	}
 }

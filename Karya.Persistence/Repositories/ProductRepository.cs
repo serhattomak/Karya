@@ -29,4 +29,12 @@ public class ProductRepository(AppDbContext context) : EfRepository<Product>(con
 									  p.Status != BaseStatuses.Deleted &&
 									  p.Status != BaseStatuses.Inactive);
 	}
+
+	public async Task<Product?> GetBySlugAsync(string slug)
+	{
+		return await context.Products
+			.FirstOrDefaultAsync(p => p.Slug == slug &&
+									  p.Status != BaseStatuses.Deleted &&
+									  p.Status != BaseStatuses.Inactive);
+	}
 }

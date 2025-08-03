@@ -10,4 +10,5 @@ public interface IPageRepository : IRepository<Page>
 	Task<PagedResult<Page>> GetPagedByTypeAsync(PageTypes type, PagedRequest request);
 	Task<PagedResult<Page>> GetPagedAsync(PagedRequest request);
 	Task<Page?> GetByNameAsync(string name);
+	Task<Page?> GetBySlugAsync(string slug);
 }

@@ -70,4 +70,12 @@ public class PageRepository(AppDbContext context) : EfRepository<Page>(context),
 									p.Status != BaseStatuses.Deleted &&
 									p.Status != BaseStatuses.Inactive);
 	}
+
+	public async Task<Page?> GetBySlugAsync(string slug)
+	{
+		return await context.Pages
+			.FirstOrDefaultAsync(p => p.Slug == slug &&
+									p.Status != BaseStatuses.Deleted &&
+									p.Status != BaseStatuses.Inactive);
+	}
 }

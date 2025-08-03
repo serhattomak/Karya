@@ -17,9 +17,17 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.IsRequired()
 			.HasMaxLength(200);
 
+		builder.Property(p => p.Slug)
+			.IsRequired()
+			.HasMaxLength(250);
+
 		builder.HasIndex(p => p.Name)
 			.IsUnique()
 			.HasDatabaseName("IX_Pages_Name");
+
+		builder.HasIndex(p => p.Slug)
+			.IsUnique()
+			.HasDatabaseName("IX_Pages_Slug");
 
 		// String properties
 		builder.Property(p => p.BackgroundImageUrl)

@@ -220,12 +220,32 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		return Result<ProductDto>.Success(productDto);
 	}
 
+	public async Task<Result<ProductDto>> GetBySlugAsync(string slug)
+	{
+		if (string.IsNullOrWhiteSpace(slug))
+			return Result<ProductDto>.Failure("Product slug cannot be empty");
+
+		var product = await repository.GetBySlugAsync(slug);
+		if (product == null)
+			return Result<ProductDto>.Failure($"Product with slug '{slug}' not found");
+
+		var productDto = mapper.Map<ProductDto>(product);
+
+		return Result<ProductDto>.Success(productDto);
+	}
+
 	public async Task<Result<ProductDto>> CreateAsync(CreateProductDto productDto)
 	{
-		var existingProduct = await repository.GetByNameAsync(productDto.Name);
-		if (existingProduct != null)
+		var existingProductByName = await repository.GetByNameAsync(productDto.Name);
+		if (existingProductByName != null)
 		{
 			return Result<ProductDto>.Failure($"Product with name '{productDto.Name}' already exists");
+		}
+
+		var existingProductBySlug = await repository.GetBySlugAsync(productDto.Slug);
+		if (existingProductBySlug != null)
+		{
+			return Result<ProductDto>.Failure($"Product with slug '{productDto.Slug}' already exists");
 		}
 
 		var product = mapper.Map<Domain.Entities.Product>(productDto);
@@ -241,10 +261,16 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		if (product == null)
 			return Result<ProductDto>.Failure("Product not found");
 
-		var existingProduct = await repository.GetByNameAsync(productDto.Name);
-		if (existingProduct != null && existingProduct.Id != productDto.Id)
+		var existingProductByName = await repository.GetByNameAsync(productDto.Name);
+		if (existingProductByName != null && existingProductByName.Id != productDto.Id)
 		{
 			return Result<ProductDto>.Failure($"Product with name '{productDto.Name}' already exists");
+		}
+
+		var existingProductBySlug = await repository.GetBySlugAsync(productDto.Slug);
+		if (existingProductBySlug != null && existingProductBySlug.Id != productDto.Id)
+		{
+			return Result<ProductDto>.Failure($"Product with slug '{productDto.Slug}' already exists");
 		}
 
 		mapper.Map(productDto, product);

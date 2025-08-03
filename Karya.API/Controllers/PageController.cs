@@ -17,6 +17,9 @@ namespace Karya.API.Controllers
 		[HttpGet("name/{name}")]
 		public async Task<IActionResult> GetPageByName(string name) => CreateActionResult(await service.GetPageByNameAsync(name));
 
+		[HttpGet("slug/{slug}")]
+		public async Task<IActionResult> GetPageBySlug(string slug) => CreateActionResult(await service.GetPageBySlugAsync(slug));
+
 		[HttpGet]
 		public async Task<IActionResult> GetAllPages([FromQuery] PagedRequest request)
 			=> CreateActionResult(await service.GetAllPagesAsync(request));

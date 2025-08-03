@@ -6,6 +6,7 @@ public record UpdatePageDto(
 	Guid Id,
 	PageTypes PageType,
 	string Name,
+	string Slug,
 	List<string> Titles,
 	List<string>? Subtitles,
 	List<string>? Descriptions,
