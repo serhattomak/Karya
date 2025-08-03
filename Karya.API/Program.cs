@@ -4,6 +4,8 @@ using Karya.Infrastructure.Extensions;
 using Karya.Persistence.Context;
 using Karya.Persistence.Extensions;
 using Karya.Persistence.Seed;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
@@ -71,6 +73,23 @@ builder.Services.AddCors(options =>
 		policy => policy.WithOrigins("http://localhost:3000")
 			.AllowAnyHeader()
 			.AllowAnyMethod());
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+	options.ValueLengthLimit = int.MaxValue;
+	options.MultipartBodyLengthLimit = int.MaxValue;
+	options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+builder.Services.Configure<IISServerOptions>(options =>
+{
+	options.MaxRequestBodySize = 100 * 1024 * 1024;
+});
+
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+	options.Limits.MaxRequestBodySize = 100 * 1024 * 1024;
 });
 
 var app = builder.Build();

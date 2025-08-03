@@ -17,6 +17,8 @@ namespace Karya.API.Controllers
 
 		[HttpPost("upload")]
 		[Authorize(Roles = "Admin")]
+		[RequestSizeLimit(100_000_000)]
+		[RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
 		public async Task<IActionResult> Upload([FromForm] IFormFile file) => CreateActionResult(await service.SaveFileAsync(file));
 
 		[HttpPost]

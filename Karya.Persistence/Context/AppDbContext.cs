@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	public DbSet<Contact> Contacts => Set<Contact>();
 	public DbSet<Page> Pages => Set<Page>();
 	public DbSet<User> Users => Set<User>();
+	public DbSet<Document> Documents => Set<Document>();
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{

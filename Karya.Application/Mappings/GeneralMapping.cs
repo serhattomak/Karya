@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Karya.Application.Features.Document.Dto;
 using Karya.Application.Features.File.Dto;
 using Karya.Application.Features.Page.Dto;
 using Karya.Application.Features.Product.Dto;
@@ -62,5 +63,13 @@ public class GeneralMapping : Profile
 			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds));
 		CreateMap<UpdatePageProductOrderDto, Page>()
 			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds));
+
+		CreateMap<Document, DocumentDto>().ReverseMap();
+		CreateMap<CreateDocumentDto, Domain.Entities.Document>()
+			.ForMember(dest => dest.MimeType, opt => opt.MapFrom(src => src.MimeType))
+			.ForMember(dest => dest.FileSize, opt => opt.MapFrom(src => src.FileSize));
+		CreateMap<UpdateDocumentDto, Domain.Entities.Document>()
+			.ForMember(dest => dest.MimeType, opt => opt.MapFrom(src => src.MimeType))
+			.ForMember(dest => dest.FileSize, opt => opt.MapFrom(src => src.FileSize));
 	}
 }
