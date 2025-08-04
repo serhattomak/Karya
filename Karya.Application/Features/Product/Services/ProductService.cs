@@ -175,7 +175,7 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 	}
 
 	/// <summary>
-	/// Çoklu productlar için related data yükleme (batch işlem) - Optimized
+	/// Çoklu productlar için related data yükleme (batch işlem) - Thread Safe
 	/// </summary>
 	private async Task LoadProductsRelatedData(List<ProductDto> productDtos, List<Domain.Entities.Product> products)
 	{
@@ -202,18 +202,13 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 				foreach (var id in product.DocumentIds) allDocumentIds.Add(id);
 		}
 
-		var filesTask = allFileIds.Count > 0
-			? fileRepository.GetByIdsAsync([.. allFileIds])
-			: Task.FromResult(new List<Domain.Entities.File>());
+		var files = allFileIds.Count > 0
+			? await fileRepository.GetByIdsAsync([.. allFileIds])
+			: new List<Domain.Entities.File>();
 
-		var documentsTask = allDocumentIds.Count > 0
-			? documentRepository.GetByIdsAsync([.. allDocumentIds])
-			: Task.FromResult(new List<Domain.Entities.Document>());
-
-		await Task.WhenAll(filesTask, documentsTask);
-
-		var files = await filesTask;
-		var documents = await documentsTask;
+		var documents = allDocumentIds.Count > 0
+			? await documentRepository.GetByIdsAsync([.. allDocumentIds])
+			: new List<Domain.Entities.Document>();
 
 		var fileDtoLookup = new Dictionary<Guid, FileDto>(files.Count);
 		var documentDtoLookup = new Dictionary<Guid, DocumentDto>(documents.Count);
