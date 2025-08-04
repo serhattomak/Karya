@@ -25,4 +25,8 @@
     <ProjectReference Include="..\Karya.Infrastructure\Karya.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
 </Project>

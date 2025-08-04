@@ -89,13 +89,13 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 	public async Task<Result<ProductDto>> CreateAsync(CreateProductDto productDto)
 	{
-		var existingProductByName = await repository.GetByNameAsync(productDto.Name);
+		var existingProductByName = await repository.GetByNameForUpdateAsync(productDto.Name);
 		if (existingProductByName != null)
 		{
 			return Result<ProductDto>.Failure($"Product with name '{productDto.Name}' already exists");
 		}
 
-		var existingProductBySlug = await repository.GetBySlugAsync(productDto.Slug);
+		var existingProductBySlug = await repository.GetBySlugForUpdateAsync(productDto.Slug);
 		if (existingProductBySlug != null)
 		{
 			return Result<ProductDto>.Failure($"Product with slug '{productDto.Slug}' already exists");
@@ -121,13 +121,13 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		if (product == null)
 			return Result<ProductDto>.Failure("Product not found");
 
-		var existingProductByName = await repository.GetByNameAsync(productDto.Name);
+		var existingProductByName = await repository.GetByNameForUpdateAsync(productDto.Name);
 		if (existingProductByName != null && existingProductByName.Id != productDto.Id)
 		{
 			return Result<ProductDto>.Failure($"Product with name '{productDto.Name}' already exists");
 		}
 
-		var existingProductBySlug = await repository.GetBySlugAsync(productDto.Slug);
+		var existingProductBySlug = await repository.GetBySlugForUpdateAsync(productDto.Slug);
 		if (existingProductBySlug != null && existingProductBySlug.Id != productDto.Id)
 		{
 			return Result<ProductDto>.Failure($"Product with slug '{productDto.Slug}' already exists");
@@ -175,84 +175,152 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 	}
 
 	/// <summary>
-	/// Çoklu productlar için related data yükleme (batch işlem)
+	/// Çoklu productlar için related data yükleme (batch işlem) - Optimized
 	/// </summary>
 	private async Task LoadProductsRelatedData(List<ProductDto> productDtos, List<Domain.Entities.Product> products)
 	{
-		if (!productDtos.Any()) return;
+		if (productDtos.Count == 0) return;
 
-		var allFileIds = products
-			.SelectMany(p => new List<Guid>[]
-			{
-				p.FileIds ?? [],
-				p.DocumentImageIds ?? [],
-				p.ProductDetailImageIds ?? []
-			})
-			.SelectMany(ids => ids)
-			.Concat(products.Where(p => p.ProductImageId.HasValue).Select(p => p.ProductImageId!.Value))
-			.Distinct()
-			.ToList();
+		var allFileIds = new HashSet<Guid>();
+		var allDocumentIds = new HashSet<Guid>();
 
-		var allDocumentIds = products
-			.Where(p => p.DocumentIds != null && p.DocumentIds.Any())
-			.SelectMany(p => p.DocumentIds!)
-			.Distinct()
-			.ToList();
+		foreach (var product in products)
+		{
+			if (product.FileIds?.Count > 0)
+				foreach (var id in product.FileIds) allFileIds.Add(id);
 
-		var files = allFileIds.Any()
-			? await fileRepository.GetByIdsAsync(allFileIds)
-			: new List<Domain.Entities.File>();
+			if (product.DocumentImageIds?.Count > 0)
+				foreach (var id in product.DocumentImageIds) allFileIds.Add(id);
 
-		var fileDtos = mapper.Map<List<FileDto>>(files);
+			if (product.ProductDetailImageIds?.Count > 0)
+				foreach (var id in product.ProductDetailImageIds) allFileIds.Add(id);
 
-		var documents = allDocumentIds.Any()
-			? await documentRepository.GetByIdsAsync(allDocumentIds)
-			: new List<Domain.Entities.Document>();
+			if (product.ProductImageId.HasValue)
+				allFileIds.Add(product.ProductImageId.Value);
 
-		var documentDtos = mapper.Map<List<DocumentDto>>(documents);
+			if (product.DocumentIds?.Count > 0)
+				foreach (var id in product.DocumentIds) allDocumentIds.Add(id);
+		}
+
+		var filesTask = allFileIds.Count > 0
+			? fileRepository.GetByIdsAsync([.. allFileIds])
+			: Task.FromResult(new List<Domain.Entities.File>());
+
+		var documentsTask = allDocumentIds.Count > 0
+			? documentRepository.GetByIdsAsync([.. allDocumentIds])
+			: Task.FromResult(new List<Domain.Entities.Document>());
+
+		await Task.WhenAll(filesTask, documentsTask);
+
+		var files = await filesTask;
+		var documents = await documentsTask;
+
+		var fileDtoLookup = new Dictionary<Guid, FileDto>(files.Count);
+		var documentDtoLookup = new Dictionary<Guid, DocumentDto>(documents.Count);
+
+		foreach (var file in files)
+		{
+			fileDtoLookup[file.Id] = mapper.Map<FileDto>(file);
+		}
+
+		foreach (var document in documents)
+		{
+			documentDtoLookup[document.Id] = mapper.Map<DocumentDto>(document);
+		}
+
+		var productLookup = new Dictionary<Guid, Domain.Entities.Product>(products.Count);
+		foreach (var product in products)
+		{
+			productLookup[product.Id] = product;
+		}
 
 		foreach (var productDto in productDtos)
 		{
-			var product = products.First(p => p.Id == productDto.Id);
-			MapProductFiles(productDto, product, fileDtos);
-			MapProductDocuments(productDto, product, documentDtos);
+			if (!productLookup.TryGetValue(productDto.Id, out var product)) continue;
+
+			MapProductFilesOptimized(productDto, product, fileDtoLookup);
+			MapProductDocumentsOptimized(productDto, product, documentDtoLookup);
 		}
 	}
 
 	/// <summary>
-	/// Product için file mapping
+	/// Product için file mapping - Optimized
 	/// </summary>
-	private static void MapProductFiles(ProductDto productDto, Domain.Entities.Product product, List<FileDto> fileDtos)
+	private static void MapProductFilesOptimized(ProductDto productDto, Domain.Entities.Product product, Dictionary<Guid, FileDto> fileDtoLookup)
 	{
-		// Files
-		productDto.Files = product.FileIds?.Any() == true
-			? fileDtos.Where(f => product.FileIds.Contains(f.Id)).ToList()
-			: [];
+		// Files - List initialization with capacity
+		if (product.FileIds?.Count > 0)
+		{
+			var files = new List<FileDto>(product.FileIds.Count);
+			foreach (var id in product.FileIds)
+			{
+				if (fileDtoLookup.TryGetValue(id, out var fileDto))
+					files.Add(fileDto);
+			}
+			productDto.Files = files;
+		}
+		else
+		{
+			productDto.Files = [];
+		}
 
 		// Document Images
-		productDto.DocumentImages = product.DocumentImageIds?.Any() == true
-			? fileDtos.Where(f => product.DocumentImageIds.Contains(f.Id)).ToList()
-			: [];
+		if (product.DocumentImageIds?.Count > 0)
+		{
+			var documentImages = new List<FileDto>(product.DocumentImageIds.Count);
+			foreach (var id in product.DocumentImageIds)
+			{
+				if (fileDtoLookup.TryGetValue(id, out var fileDto))
+					documentImages.Add(fileDto);
+			}
+			productDto.DocumentImages = documentImages;
+		}
+		else
+		{
+			productDto.DocumentImages = [];
+		}
 
 		// Product Detail Images
-		productDto.ProductImages = product.ProductDetailImageIds?.Any() == true
-			? fileDtos.Where(f => product.ProductDetailImageIds.Contains(f.Id)).ToList()
-			: [];
+		if (product.ProductDetailImageIds?.Count > 0)
+		{
+			var productImages = new List<FileDto>(product.ProductDetailImageIds.Count);
+			foreach (var id in product.ProductDetailImageIds)
+			{
+				if (fileDtoLookup.TryGetValue(id, out var fileDto))
+					productImages.Add(fileDto);
+			}
+			productDto.ProductImages = productImages;
+		}
+		else
+		{
+			productDto.ProductImages = [];
+		}
 
 		// Product Image (single)
-		productDto.ProductImage = product.ProductImageId.HasValue
-			? fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value)
+		productDto.ProductImage = product.ProductImageId.HasValue && fileDtoLookup.TryGetValue(product.ProductImageId.Value, out var productImage)
+			? productImage
 			: null;
 	}
 
 	/// <summary>
-	/// Product için document mapping
+	/// Product için document mapping - Optimized
 	/// </summary>
-	private static void MapProductDocuments(ProductDto productDto, Domain.Entities.Product product, List<DocumentDto> documentDtos)
+	private static void MapProductDocumentsOptimized(ProductDto productDto, Domain.Entities.Product product, Dictionary<Guid, DocumentDto> documentDtoLookup)
 	{
-		productDto.Documents = product.DocumentIds?.Any() == true
-			? documentDtos.Where(d => product.DocumentIds.Contains(d.Id)).ToList()
-			: [];
+		if (product.DocumentIds?.Count > 0)
+		{
+			var documents = new List<DocumentDto>(product.DocumentIds.Count);
+			foreach (var id in product.DocumentIds)
+			{
+				if (documentDtoLookup.TryGetValue(id, out var documentDto))
+					documents.Add(documentDto);
+			}
+			productDto.Documents = documents;
+		}
+		else
+		{
+			productDto.Documents = [];
+		}
 	}
 
 	/// <summary>

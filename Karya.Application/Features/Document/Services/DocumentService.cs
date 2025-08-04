@@ -102,13 +102,13 @@ public class DocumentService(
 
 	public async Task<Result<DocumentDto>> CreateAsync(CreateDocumentDto documentDto)
 	{
-		var existingDocumentByName = await repository.GetByNameAsync(documentDto.Name);
+		var existingDocumentByName = await repository.GetByNameForUpdateAsync(documentDto.Name);
 		if (existingDocumentByName != null)
 		{
 			return Result<DocumentDto>.Failure($"Document with name '{documentDto.Name}' already exists");
 		}
 
-		var existingDocumentBySlug = await repository.GetBySlugAsync(documentDto.Slug);
+		var existingDocumentBySlug = await repository.GetBySlugForUpdateAsync(documentDto.Slug);
 		if (existingDocumentBySlug != null)
 		{
 			return Result<DocumentDto>.Failure($"Document with slug '{documentDto.Slug}' already exists");
@@ -141,13 +141,13 @@ public class DocumentService(
 		if (document == null)
 			return Result<DocumentDto>.Failure("Document not found");
 
-		var existingDocumentByName = await repository.GetByNameAsync(documentDto.Name);
+		var existingDocumentByName = await repository.GetByNameForUpdateAsync(documentDto.Name);
 		if (existingDocumentByName != null && existingDocumentByName.Id != documentDto.Id)
 		{
 			return Result<DocumentDto>.Failure($"Document with name '{documentDto.Name}' already exists");
 		}
 
-		var existingDocumentBySlug = await repository.GetBySlugAsync(documentDto.Slug);
+		var existingDocumentBySlug = await repository.GetBySlugForUpdateAsync(documentDto.Slug);
 		if (existingDocumentBySlug != null && existingDocumentBySlug.Id != documentDto.Id)
 		{
 			return Result<DocumentDto>.Failure($"Document with slug '{documentDto.Slug}' already exists");
@@ -162,31 +162,16 @@ public class DocumentService(
 		return Result<DocumentDto>.Success(mapper.Map<DocumentDto>(document));
 	}
 
-	public async Task<Result> DeleteAsync(Guid id)
-	{
-		var document = await repository.GetByIdAsync(id);
-		if (document == null)
-			return Result.Failure("Document not found");
-
-		document.Status = BaseStatuses.Deleted;
-		document.ModifiedDate = DateTime.UtcNow;
-
-		repository.UpdateAsync(document);
-		await repository.SaveChangesAsync();
-
-		return Result.Success(HttpStatusCode.NoContent);
-	}
-
 	public async Task<Result<DocumentDto>> UploadDocumentAsync(IFormFile file, CreateDocumentDto documentDto)
 	{
 		var allowedTypes = new[] {
-		"application/pdf",
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-		"application/msword",
-		"application/vnd.ms-excel",
-		"text/plain"
-	};
+			"application/pdf",
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			"application/msword",
+			"application/vnd.ms-excel",
+			"text/plain"
+		};
 
 		if (!allowedTypes.Contains(file.ContentType))
 		{
@@ -226,7 +211,7 @@ public class DocumentService(
 			fileHash = Convert.ToHexString(hashBytes);
 		}
 
-		var existingFile = await fileRepository.GetByHashAsync(fileHash);
+		var existingFile = await fileRepository.GetByHashForUpdateAsync(fileHash);
 		Guid fileEntityId;
 
 		if (existingFile != null)
@@ -261,6 +246,21 @@ public class DocumentService(
 		};
 
 		return await CreateAsync(createDto);
+	}
+
+	public async Task<Result> DeleteAsync(Guid id)
+	{
+		var document = await repository.GetByIdAsync(id);
+		if (document == null)
+			return Result.Failure("Document not found");
+
+		document.Status = BaseStatuses.Deleted;
+		document.ModifiedDate = DateTime.UtcNow;
+
+		repository.UpdateAsync(document);
+		await repository.SaveChangesAsync();
+
+		return Result.Success(HttpStatusCode.NoContent);
 	}
 
 	public async Task<Result> DownloadAsync(Guid id)

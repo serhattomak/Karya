@@ -13,4 +13,6 @@ public interface IDocumentRepository : IRepository<Document>
 	Task<List<Document>> GetByCategoryAsync(string category);
 	Task<List<Document>> GetActiveDocumentsAsync();
 	Task IncrementDownloadCountAsync(Guid documentId);
+	Task<Document?> GetByNameForUpdateAsync(string name);
+	Task<Document?> GetBySlugForUpdateAsync(string slug);
 }

@@ -18,11 +18,40 @@ public class ProductRepository(AppDbContext context) : EfRepository<Product>(con
 	public async Task<List<Product>> GetByIdsAsync(IEnumerable<Guid> ids)
 	{
 		return await context.Products
-			.Where(p => ids.Contains(p.Id))
+			.AsNoTracking()
+			.Where(p => ids.Contains(p.Id) &&
+					   p.Status != BaseStatuses.Deleted &&
+					   p.Status != BaseStatuses.Inactive)
 			.ToListAsync();
 	}
 
 	public async Task<Product?> GetByNameAsync(string name)
+	{
+		return await context.Products
+			.AsNoTracking()
+			.FirstOrDefaultAsync(p => p.Name == name &&
+									  p.Status != BaseStatuses.Deleted &&
+									  p.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<Product?> GetBySlugAsync(string slug)
+	{
+		return await context.Products
+			.AsNoTracking()
+			.FirstOrDefaultAsync(p => p.Slug == slug &&
+									  p.Status != BaseStatuses.Deleted &&
+									  p.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<Product?> GetByIdForUpdateAsync(Guid id)
+	{
+		return await context.Products
+			.FirstOrDefaultAsync(p => p.Id == id &&
+									  p.Status != BaseStatuses.Deleted &&
+									  p.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<Product?> GetByNameForUpdateAsync(string name)
 	{
 		return await context.Products
 			.FirstOrDefaultAsync(p => p.Name == name &&
@@ -30,7 +59,7 @@ public class ProductRepository(AppDbContext context) : EfRepository<Product>(con
 									  p.Status != BaseStatuses.Inactive);
 	}
 
-	public async Task<Product?> GetBySlugAsync(string slug)
+	public async Task<Product?> GetBySlugForUpdateAsync(string slug)
 	{
 		return await context.Products
 			.FirstOrDefaultAsync(p => p.Slug == slug &&

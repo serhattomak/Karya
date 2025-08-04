@@ -1,8 +1,7 @@
 ﻿using Karya.Domain.Entities;
+using Karya.Persistence.Helpers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Text.Json;
 
 namespace Karya.Persistence.Configurations;
 
@@ -29,7 +28,6 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.IsUnique()
 			.HasDatabaseName("IX_Pages_Slug");
 
-		// String properties
 		builder.Property(p => p.BackgroundImageUrl)
 			.HasMaxLength(500)
 			.HasColumnType("nvarchar(500)");
@@ -38,106 +36,54 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.HasMaxLength(500)
 			.HasColumnType("nvarchar(500)");
 
-		// String List Properties
 		builder.Property(p => p.Titles)
-			.HasConversion(
-				v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-				v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>>(
-				(c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
-				c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Subtitles)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Descriptions)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.ListTitles)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.ListItems)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Urls)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
-		// Guid List Properties
 		builder.Property(p => p.FileIds)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetGuidListConverter())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<Guid>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetGuidListComparer());
 
 		builder.Property(p => p.ProductIds)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetGuidListConverter())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<Guid>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetGuidListComparer());
 
 		builder.Property(p => p.AdditionalFields)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<string>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.DocumentIds)
-			.HasConversion(
-				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
-				v => v != null ? JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) : null)
+			.HasConversion(JsonConversionHelper.GetGuidListConverter())
 			.HasColumnType("NVARCHAR(MAX)")
-			.Metadata.SetValueComparer(new ValueComparer<List<Guid>?>(
-				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-				c => c == null ? null : c.ToList()));
+			.Metadata.SetValueComparer(JsonConversionHelper.GetGuidListComparer());
 	}
 }

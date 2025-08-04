@@ -19,13 +19,17 @@ public class DocumentRepository(AppDbContext context) : EfRepository<Document>(c
 	public async Task<List<Document>> GetByIdsAsync(IEnumerable<Guid> ids)
 	{
 		return await context.Documents
-			.Where(d => ids.Contains(d.Id))
+			.AsNoTracking()
+			.Where(d => ids.Contains(d.Id) &&
+					   d.Status != BaseStatuses.Deleted &&
+					   d.Status != BaseStatuses.Inactive)
 			.ToListAsync();
 	}
 
 	public async Task<Document?> GetByNameAsync(string name)
 	{
 		return await context.Documents
+			.AsNoTracking()
 			.FirstOrDefaultAsync(d => d.Name == name &&
 									  d.Status != BaseStatuses.Deleted &&
 									  d.Status != BaseStatuses.Inactive);
@@ -34,6 +38,7 @@ public class DocumentRepository(AppDbContext context) : EfRepository<Document>(c
 	public async Task<Document?> GetBySlugAsync(string slug)
 	{
 		return await context.Documents
+			.AsNoTracking()
 			.FirstOrDefaultAsync(d => d.Slug == slug &&
 									  d.Status != BaseStatuses.Deleted &&
 									  d.Status != BaseStatuses.Inactive);
@@ -71,6 +76,7 @@ public class DocumentRepository(AppDbContext context) : EfRepository<Document>(c
 	public async Task<List<Document>> GetByCategoryAsync(string category)
 	{
 		return await context.Documents
+			.AsNoTracking()
 			.Where(d => d.Category == category &&
 						d.Status != BaseStatuses.Deleted &&
 						d.Status != BaseStatuses.Inactive &&
@@ -83,6 +89,7 @@ public class DocumentRepository(AppDbContext context) : EfRepository<Document>(c
 	public async Task<List<Document>> GetActiveDocumentsAsync()
 	{
 		return await context.Documents
+			.AsNoTracking()
 			.Where(d => d.IsActive &&
 						d.Status != BaseStatuses.Deleted &&
 						d.Status != BaseStatuses.Inactive)
@@ -100,5 +107,21 @@ public class DocumentRepository(AppDbContext context) : EfRepository<Document>(c
 			document.LastDownloadDate = DateTime.UtcNow;
 			await context.SaveChangesAsync();
 		}
+	}
+
+	public async Task<Document?> GetByNameForUpdateAsync(string name)
+	{
+		return await context.Documents
+			.FirstOrDefaultAsync(d => d.Name == name &&
+									  d.Status != BaseStatuses.Deleted &&
+									  d.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<Document?> GetBySlugForUpdateAsync(string slug)
+	{
+		return await context.Documents
+			.FirstOrDefaultAsync(d => d.Slug == slug &&
+									  d.Status != BaseStatuses.Deleted &&
+									  d.Status != BaseStatuses.Inactive);
 	}
 }
