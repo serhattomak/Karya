@@ -1,4 +1,5 @@
-﻿using Karya.Application.Features.File.Dto;
+﻿using Karya.Application.Features.Document.Dto;
+using Karya.Application.Features.File.Dto;
 using Karya.Application.Features.Product.Dto;
 using Karya.Domain.Enums;
 
@@ -18,7 +19,11 @@ public class PageDto
 	public List<string>? Urls { get; set; } = [];
 	public string? BackgroundImageUrl { get; set; }
 	public string? BannerImageUrl { get; set; }
+	public List<Guid>? FileIds { get; set; } = [];
+	public List<Guid>? ProductIds { get; set; } = [];
+	public List<Guid>? DocumentIds { get; set; } = [];
+	public List<string>? AdditionalFields { get; set; } = [];
 	public List<FileDto> Files { get; set; } = [];
 	public List<ProductDto> Products { get; set; } = [];
-	public List<string>? AdditionalFields { get; set; } = [];
+	public List<DocumentDto> Documents { get; set; } = [];
 }

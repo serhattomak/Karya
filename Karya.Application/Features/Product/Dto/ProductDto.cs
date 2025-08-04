@@ -1,4 +1,5 @@
-﻿using Karya.Application.Features.File.Dto;
+﻿using Karya.Application.Features.Document.Dto;
+using Karya.Application.Features.File.Dto;
 
 namespace Karya.Application.Features.Product.Dto;
 
@@ -18,8 +19,10 @@ public class ProductDto()
 	public List<Guid>? DocumentImageIds { get; set; } = [];
 	public List<Guid>? ProductDetailImageIds { get; set; } = [];
 	public List<Guid> FileIds { get; set; } = [];
+	public List<Guid>? DocumentIds { get; set; } = [];
 	public List<FileDto> Files { get; set; } = [];
 	public FileDto? ProductImage { get; set; }
 	public List<FileDto> DocumentImages { get; set; } = [];
 	public List<FileDto> ProductImages { get; set; } = [];
+	public List<DocumentDto> Documents { get; set; } = [];
 }

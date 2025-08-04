@@ -129,5 +129,15 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
 				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
 				c => c == null ? null : c.ToList()));
+
+		builder.Property(p => p.DocumentIds)
+			.HasConversion(
+				v => v != null ? JsonSerializer.Serialize(v, (JsonSerializerOptions?)null) : null,
+				v => v != null ? JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) : null)
+			.HasColumnType("NVARCHAR(MAX)")
+			.Metadata.SetValueComparer(new ValueComparer<List<Guid>?>(
+				(c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+				c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+				c => c == null ? null : c.ToList()));
 	}
 }

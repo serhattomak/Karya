@@ -17,4 +17,5 @@ public class Product : BaseEntity
 	public List<Guid>? DocumentImageIds { get; set; } = [];
 	public List<Guid>? ProductDetailImageIds { get; set; } = [];
 	public List<Guid>? FileIds { get; set; } = [];
+	public List<Guid>? DocumentIds { get; set; } = [];
 }

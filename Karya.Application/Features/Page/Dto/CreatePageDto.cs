@@ -16,5 +16,6 @@ public record CreatePageDto(
 	string? BannerImageUrl,
 	List<Guid>? FileIds,
 	List<Guid>? ProductIds,
+	List<Guid>? DocumentIds,
 	List<string>? AdditionalFields
 );

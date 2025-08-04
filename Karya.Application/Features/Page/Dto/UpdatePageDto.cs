@@ -17,5 +17,6 @@ public record UpdatePageDto(
 	string? BannerImageUrl,
 	List<Guid>? FileIds,
 	List<Guid>? ProductIds,
+	List<Guid>? DocumentIds,
 	List<string>? AdditionalFields
 );

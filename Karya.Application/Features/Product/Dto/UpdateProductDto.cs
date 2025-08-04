@@ -14,4 +14,5 @@ public record UpdateProductDto(
 	Guid? ProductImageId,
 	List<Guid>? DocumentImageIds,
 	List<Guid>? ProductDetailImageIds,
-	List<Guid>? FileIds);
+	List<Guid>? FileIds,
+	List<Guid>? DocumentIds);

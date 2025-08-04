@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Karya.Application.Features.Document.Dto;
 using Karya.Application.Features.File.Dto;
 using Karya.Application.Features.Page.Dto;
 using Karya.Application.Features.Page.Services.Interfaces;
@@ -14,6 +15,7 @@ public class PageService(
 	IPageRepository repository,
 	IProductRepository productRepository,
 	IFileRepository fileRepository,
+	IDocumentRepository documentRepository,
 	IMapper mapper) : IPageService
 {
 	public async Task<Result<PageDto>> GetPageByIdAsync(Guid id)
@@ -215,6 +217,12 @@ public class PageService(
 		{
 			var files = await fileRepository.GetByIdsAsync(page.FileIds);
 			pageDto.Files = mapper.Map<List<FileDto>>(files);
+		}
+
+		if (page.DocumentIds != null && page.DocumentIds.Any())
+		{
+			var documents = await documentRepository.GetByIdsAsync(page.DocumentIds);
+			pageDto.Documents = mapper.Map<List<DocumentDto>>(documents);
 		}
 	}
 }

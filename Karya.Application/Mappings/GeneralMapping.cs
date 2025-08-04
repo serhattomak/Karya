@@ -24,10 +24,12 @@ public class GeneralMapping : Profile
 			.ForMember(dest => dest.DocumentImageIds, opt => opt.MapFrom(src => src.DocumentImageIds))
 			.ForMember(dest => dest.ProductDetailImageIds, opt => opt.MapFrom(src => src.ProductDetailImageIds))
 			.ForMember(dest => dest.FileIds, opt => opt.MapFrom(src => src.FileIds))
+			.ForMember(dest => dest.DocumentIds, opt => opt.MapFrom(src => src.DocumentIds))
 			.ForMember(dest => dest.Files, opt => opt.Ignore())
 			.ForMember(dest => dest.ProductImage, opt => opt.Ignore())
 			.ForMember(dest => dest.DocumentImages, opt => opt.Ignore())
-			.ForMember(dest => dest.ProductImages, opt => opt.Ignore());
+			.ForMember(dest => dest.ProductImages, opt => opt.Ignore())
+			.ForMember(dest => dest.Documents, opt => opt.Ignore());
 
 		CreateMap<ProductDto, Product>()
 			.ForMember(dest => dest.Titles, opt => opt.MapFrom(src => src.Titles))
@@ -40,10 +42,15 @@ public class GeneralMapping : Profile
 			.ForMember(dest => dest.ProductImageId, opt => opt.MapFrom(src => src.ProductImageId))
 			.ForMember(dest => dest.DocumentImageIds, opt => opt.MapFrom(src => src.DocumentImageIds))
 			.ForMember(dest => dest.ProductDetailImageIds, opt => opt.MapFrom(src => src.ProductDetailImageIds))
-			.ForMember(dest => dest.FileIds, opt => opt.MapFrom(src => src.FileIds));
+			.ForMember(dest => dest.FileIds, opt => opt.MapFrom(src => src.FileIds))
+			.ForMember(dest => dest.DocumentIds, opt => opt.MapFrom(src => src.DocumentIds));
 
-		CreateMap<CreateProductDto, Product>();
-		CreateMap<UpdateProductDto, Product>();
+		CreateMap<CreateProductDto, Product>()
+			.ForMember(dest => dest.DocumentIds, opt => opt.MapFrom(src => src.DocumentIds));
+
+		CreateMap<UpdateProductDto, Product>()
+			.ForMember(dest => dest.DocumentIds, opt => opt.MapFrom(src => src.DocumentIds));
+
 
 		CreateMap<File, FileDto>().ReverseMap();
 		CreateMap<CreateFileDto, File>();
@@ -54,13 +61,17 @@ public class GeneralMapping : Profile
 			.ForMember(dest => dest.Descriptions, opt => opt.MapFrom(src => src.Descriptions))
 			.ForMember(dest => dest.ListTitles, opt => opt.MapFrom(src => src.ListTitles))
 			.ForMember(dest => dest.Urls, opt => opt.MapFrom(src => src.Urls))
+			.ForMember(dest => dest.DocumentIds, opt => opt.MapFrom(src => src.DocumentIds))
+			.ForMember(dest => dest.Documents, opt => opt.Ignore())
 			.ReverseMap();
 		CreateMap<CreatePageDto, Page>()
 			.ForMember(dest => dest.FileIds, opt => opt.MapFrom(src => src.FileIds))
-			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds));
+			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds))
+			.ForMember(dest => dest.DocumentIds, opt => opt.MapFrom(src => src.DocumentIds));
 		CreateMap<UpdatePageDto, Page>()
 			.ForMember(dest => dest.FileIds, opt => opt.MapFrom(src => src.FileIds))
-			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds));
+			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds))
+			.ForMember(dest => dest.DocumentIds, opt => opt.MapFrom(src => src.DocumentIds));
 		CreateMap<UpdatePageProductOrderDto, Page>()
 			.ForMember(dest => dest.ProductIds, opt => opt.MapFrom(src => src.ProductIds));
 

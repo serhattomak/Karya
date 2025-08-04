@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Karya.Application.Features.Document.Dto;
 using Karya.Application.Features.File.Dto;
 using Karya.Application.Features.Product.Dto;
 using Karya.Application.Features.Product.Services.Interfaces;
@@ -10,7 +11,7 @@ using System.Net;
 
 namespace Karya.Application.Features.Product.Services;
 
-public class ProductService(IMapper mapper, IProductRepository repository, IFileRepository fileRepository) : IProductService
+public class ProductService(IMapper mapper, IProductRepository repository, IFileRepository fileRepository, IDocumentRepository documentRepository) : IProductService
 {
 	public async Task<Result<PagedResult<ProductDto>>> GetAllAsync(PagedRequest request)
 	{
@@ -32,66 +33,7 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 		var productDtos = mapper.Map<List<ProductDto>>(products);
 
-		var allFileIds = products
-			.SelectMany(p => new List<Guid>[]
-			{
-				p.FileIds ?? [],
-				p.DocumentImageIds ?? [],
-				p.ProductDetailImageIds ?? []
-			})
-			.SelectMany(ids => ids)
-			.Concat(products.Where(p => p.ProductImageId.HasValue).Select(p => p.ProductImageId!.Value))
-			.Distinct()
-			.ToList();
-
-		var files = allFileIds.Any()
-			? await fileRepository.GetByIdsAsync(allFileIds)
-			: new List<Domain.Entities.File>();
-
-		var fileDtos = mapper.Map<List<FileDto>>(files);
-
-		foreach (var productDto in productDtos)
-		{
-			var product = products.First(p => p.Id == productDto.Id);
-
-			if (productDto.FileIds != null && productDto.FileIds.Any())
-			{
-				productDto.Files = fileDtos
-					.Where(f => productDto.FileIds.Contains(f.Id))
-					.ToList();
-			}
-			else
-			{
-				productDto.Files = [];
-			}
-
-			if (productDto.DocumentImageIds != null && productDto.DocumentImageIds.Any())
-			{
-				productDto.DocumentImages = fileDtos
-					.Where(f => productDto.DocumentImageIds.Contains(f.Id))
-					.ToList();
-			}
-			else
-			{
-				productDto.DocumentImages = [];
-			}
-
-			if (productDto.ProductDetailImageIds != null && productDto.ProductDetailImageIds.Any())
-			{
-				productDto.ProductImages = fileDtos
-					.Where(f => productDto.ProductDetailImageIds.Contains(f.Id))
-					.ToList();
-			}
-			else
-			{
-				productDto.ProductImages = [];
-			}
-
-			if (product.ProductImageId.HasValue)
-			{
-				productDto.ProductImage = fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value);
-			}
-		}
+		await LoadProductsRelatedData(productDtos, products);
 
 		var pagedResult = new PagedResult<ProductDto>(
 			productDtos,
@@ -110,52 +52,7 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 			return Result<ProductDto>.Failure("Product not found");
 
 		var productDto = mapper.Map<ProductDto>(product);
-
-		var allFileIds = new List<Guid>();
-
-		if (product.FileIds != null && product.FileIds.Any())
-			allFileIds.AddRange(product.FileIds);
-
-		if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
-			allFileIds.AddRange(product.DocumentImageIds);
-
-		if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
-			allFileIds.AddRange(product.ProductDetailImageIds);
-
-		if (product.ProductImageId.HasValue)
-			allFileIds.Add(product.ProductImageId.Value);
-
-		if (allFileIds.Any())
-		{
-			var files = await fileRepository.GetByIdsAsync(allFileIds.Distinct());
-			var fileDtos = mapper.Map<List<FileDto>>(files);
-
-			if (product.FileIds != null && product.FileIds.Any())
-			{
-				productDto.Files = fileDtos
-					.Where(f => product.FileIds.Contains(f.Id))
-					.ToList();
-			}
-
-			if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
-			{
-				productDto.DocumentImages = fileDtos
-					.Where(f => product.DocumentImageIds.Contains(f.Id))
-					.ToList();
-			}
-
-			if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
-			{
-				productDto.ProductImages = fileDtos
-					.Where(f => product.ProductDetailImageIds.Contains(f.Id))
-					.ToList();
-			}
-
-			if (product.ProductImageId.HasValue)
-			{
-				productDto.ProductImage = fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value);
-			}
-		}
+		await LoadProductRelatedData(productDto, product);
 
 		return Result<ProductDto>.Success(productDto);
 	}
@@ -170,52 +67,7 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 			return Result<ProductDto>.Failure($"Product with name '{name}' not found");
 
 		var productDto = mapper.Map<ProductDto>(product);
-
-		var allFileIds = new List<Guid>();
-
-		if (product.FileIds != null && product.FileIds.Any())
-			allFileIds.AddRange(product.FileIds);
-
-		if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
-			allFileIds.AddRange(product.DocumentImageIds);
-
-		if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
-			allFileIds.AddRange(product.ProductDetailImageIds);
-
-		if (product.ProductImageId.HasValue)
-			allFileIds.Add(product.ProductImageId.Value);
-
-		if (allFileIds.Any())
-		{
-			var files = await fileRepository.GetByIdsAsync(allFileIds.Distinct());
-			var fileDtos = mapper.Map<List<FileDto>>(files);
-
-			if (product.FileIds != null && product.FileIds.Any())
-			{
-				productDto.Files = fileDtos
-					.Where(f => product.FileIds.Contains(f.Id))
-					.ToList();
-			}
-
-			if (product.DocumentImageIds != null && product.DocumentImageIds.Any())
-			{
-				productDto.DocumentImages = fileDtos
-					.Where(f => product.DocumentImageIds.Contains(f.Id))
-					.ToList();
-			}
-
-			if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Any())
-			{
-				productDto.ProductImages = fileDtos
-					.Where(f => product.ProductDetailImageIds.Contains(f.Id))
-					.ToList();
-			}
-
-			if (product.ProductImageId.HasValue)
-			{
-				productDto.ProductImage = fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value);
-			}
-		}
+		await LoadProductRelatedData(productDto, product);
 
 		return Result<ProductDto>.Success(productDto);
 	}
@@ -230,6 +82,7 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 			return Result<ProductDto>.Failure($"Product with slug '{slug}' not found");
 
 		var productDto = mapper.Map<ProductDto>(product);
+		await LoadProductRelatedData(productDto, product);
 
 		return Result<ProductDto>.Success(productDto);
 	}
@@ -246,6 +99,13 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		if (existingProductBySlug != null)
 		{
 			return Result<ProductDto>.Failure($"Product with slug '{productDto.Slug}' already exists");
+		}
+
+		if (productDto.DocumentIds != null && productDto.DocumentIds.Any())
+		{
+			var validationResult = await ValidateDocumentReferences(productDto.DocumentIds);
+			if (!validationResult.IsSuccess)
+				return Result<ProductDto>.Failure(validationResult.ErrorMessage!);
 		}
 
 		var product = mapper.Map<Domain.Entities.Product>(productDto);
@@ -273,6 +133,13 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 			return Result<ProductDto>.Failure($"Product with slug '{productDto.Slug}' already exists");
 		}
 
+		if (productDto.DocumentIds != null && productDto.DocumentIds.Any())
+		{
+			var validationResult = await ValidateDocumentReferences(productDto.DocumentIds);
+			if (!validationResult.IsSuccess)
+				return Result<ProductDto>.Failure(validationResult.ErrorMessage!);
+		}
+
 		mapper.Map(productDto, product);
 		product.ModifiedDate = DateTime.UtcNow;
 
@@ -296,4 +163,115 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 		return Result.Success(HttpStatusCode.NoContent);
 	}
+
+	#region Private Helper Methods
+
+	/// <summary>
+	/// Tekil product için related data yükleme
+	/// </summary>
+	private async Task LoadProductRelatedData(ProductDto productDto, Domain.Entities.Product product)
+	{
+		await LoadProductsRelatedData([productDto], [product]);
+	}
+
+	/// <summary>
+	/// Çoklu productlar için related data yükleme (batch işlem)
+	/// </summary>
+	private async Task LoadProductsRelatedData(List<ProductDto> productDtos, List<Domain.Entities.Product> products)
+	{
+		if (!productDtos.Any()) return;
+
+		var allFileIds = products
+			.SelectMany(p => new List<Guid>[]
+			{
+				p.FileIds ?? [],
+				p.DocumentImageIds ?? [],
+				p.ProductDetailImageIds ?? []
+			})
+			.SelectMany(ids => ids)
+			.Concat(products.Where(p => p.ProductImageId.HasValue).Select(p => p.ProductImageId!.Value))
+			.Distinct()
+			.ToList();
+
+		var allDocumentIds = products
+			.Where(p => p.DocumentIds != null && p.DocumentIds.Any())
+			.SelectMany(p => p.DocumentIds!)
+			.Distinct()
+			.ToList();
+
+		var files = allFileIds.Any()
+			? await fileRepository.GetByIdsAsync(allFileIds)
+			: new List<Domain.Entities.File>();
+
+		var fileDtos = mapper.Map<List<FileDto>>(files);
+
+		var documents = allDocumentIds.Any()
+			? await documentRepository.GetByIdsAsync(allDocumentIds)
+			: new List<Domain.Entities.Document>();
+
+		var documentDtos = mapper.Map<List<DocumentDto>>(documents);
+
+		foreach (var productDto in productDtos)
+		{
+			var product = products.First(p => p.Id == productDto.Id);
+			MapProductFiles(productDto, product, fileDtos);
+			MapProductDocuments(productDto, product, documentDtos);
+		}
+	}
+
+	/// <summary>
+	/// Product için file mapping
+	/// </summary>
+	private static void MapProductFiles(ProductDto productDto, Domain.Entities.Product product, List<FileDto> fileDtos)
+	{
+		// Files
+		productDto.Files = product.FileIds?.Any() == true
+			? fileDtos.Where(f => product.FileIds.Contains(f.Id)).ToList()
+			: [];
+
+		// Document Images
+		productDto.DocumentImages = product.DocumentImageIds?.Any() == true
+			? fileDtos.Where(f => product.DocumentImageIds.Contains(f.Id)).ToList()
+			: [];
+
+		// Product Detail Images
+		productDto.ProductImages = product.ProductDetailImageIds?.Any() == true
+			? fileDtos.Where(f => product.ProductDetailImageIds.Contains(f.Id)).ToList()
+			: [];
+
+		// Product Image (single)
+		productDto.ProductImage = product.ProductImageId.HasValue
+			? fileDtos.FirstOrDefault(f => f.Id == product.ProductImageId.Value)
+			: null;
+	}
+
+	/// <summary>
+	/// Product için document mapping
+	/// </summary>
+	private static void MapProductDocuments(ProductDto productDto, Domain.Entities.Product product, List<DocumentDto> documentDtos)
+	{
+		productDto.Documents = product.DocumentIds?.Any() == true
+			? documentDtos.Where(d => product.DocumentIds.Contains(d.Id)).ToList()
+			: [];
+	}
+
+	/// <summary>
+	/// Document referansları validation
+	/// </summary>
+	private async Task<Result> ValidateDocumentReferences(List<Guid> documentIds)
+	{
+		var existingDocuments = await documentRepository.GetByIdsAsync(documentIds);
+		var existingDocumentIds = existingDocuments.Select(d => d.Id).ToHashSet();
+
+		var invalidDocumentIds = documentIds.Where(id => !existingDocumentIds.Contains(id)).ToList();
+
+		if (invalidDocumentIds.Any())
+		{
+			return Result.Failure($"Invalid document IDs: {string.Join(", ", invalidDocumentIds)}");
+		}
+
+		return Result.Success();
+	}
+
+	#endregion
 }

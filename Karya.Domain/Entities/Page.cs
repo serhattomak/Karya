@@ -19,4 +19,5 @@ public class Page : BaseEntity
 	public List<Guid>? FileIds { get; set; } = [];
 	public List<Guid>? ProductIds { get; set; } = [];
 	public List<string>? AdditionalFields { get; set; } = [];
+	public List<Guid>? DocumentIds { get; set; } = [];
 }
