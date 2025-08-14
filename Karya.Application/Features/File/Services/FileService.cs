@@ -2,7 +2,6 @@
 using Karya.Application.Features.File.Dto;
 using Karya.Application.Features.File.Services.Interfaces;
 using Karya.Domain.Common;
-using Karya.Domain.Enums;
 using Karya.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Net;
@@ -120,9 +119,7 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 			product.FileIds!.Remove(id);
 			productRepository.UpdateAsync(product);
 		}
-		file.Status = BaseStatuses.Deleted;
-		file.ModifiedDate = DateTime.UtcNow;
-		repository.UpdateAsync(file);
+		repository.DeleteAsync(file);
 		await repository.SaveChangesAsync();
 		return Result.Success(HttpStatusCode.NoContent);
 	}

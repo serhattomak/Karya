@@ -4,7 +4,6 @@ using Karya.Application.Features.Document.Services.Interfaces;
 using Karya.Application.Features.File.Dto;
 using Karya.Application.Features.File.Services.Interfaces;
 using Karya.Domain.Common;
-using Karya.Domain.Enums;
 using Karya.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Net;
@@ -254,10 +253,7 @@ public class DocumentService(
 		if (document == null)
 			return Result.Failure("Document not found");
 
-		document.Status = BaseStatuses.Deleted;
-		document.ModifiedDate = DateTime.UtcNow;
-
-		repository.UpdateAsync(document);
+		repository.DeleteAsync(document);
 		await repository.SaveChangesAsync();
 
 		return Result.Success(HttpStatusCode.NoContent);
