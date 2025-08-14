@@ -18,6 +18,7 @@ public class Page : BaseEntity
 	public string? BackgroundImageUrl { get; set; }
 	public string? BannerImageUrl { get; set; }
 	public string? MainImageUrl { get; set; }
+	public Guid? MainImageId { get; set; }
 	public List<Guid>? FileIds { get; set; } = [];
 	public List<Guid>? ProductIds { get; set; } = [];
 	public List<string>? AdditionalFields { get; set; } = [];

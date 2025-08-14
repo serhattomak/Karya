@@ -43,6 +43,9 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.HasMaxLength(500)
 			.HasColumnType("nvarchar(500)");
 
+		builder.Property(p => p.MainImageId)
+			.HasColumnType("uniqueidentifier");
+
 		builder.Property(p => p.Titles)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")

@@ -207,6 +207,9 @@ public class PageService(
 		if (page.FileIds?.Count > 0)
 			foreach (var id in page.FileIds) allFileIds.Add(id);
 
+		if (page.MainImageId.HasValue)
+			allFileIds.Add(page.MainImageId.Value);
+
 		if (page.DocumentIds?.Count > 0)
 			foreach (var id in page.DocumentIds) allDocumentIds.Add(id);
 
@@ -280,7 +283,6 @@ public class PageService(
 				if (productLookup.TryGetValue(productId, out var product))
 				{
 					var productDto = mapper.Map<ProductDto>(product);
-
 					// Map product files
 					if (product.FileIds?.Count > 0)
 					{
@@ -297,12 +299,12 @@ public class PageService(
 						productDto.Files = [];
 					}
 					// Map ProductMainImage
-					productDto.ProductMainImage = product.ProductMainImageId.HasValue && fileLookup.TryGetValue(product.ProductMainImageId.Value, out var mainImageDto)
-						? mainImageDto
+					productDto.ProductMainImage = product.ProductMainImageId.HasValue && fileLookup.TryGetValue(product.ProductMainImageId.Value, out var productMainImageDto)
+						? productMainImageDto
 						: null;
 					// Map ProductImage
-					productDto.ProductImage = product.ProductImageId.HasValue && fileLookup.TryGetValue(product.ProductImageId.Value, out var imageDto)
-						? imageDto
+					productDto.ProductImage = product.ProductImageId.HasValue && fileLookup.TryGetValue(product.ProductImageId.Value, out var productImageDto)
+						? productImageDto
 						: null;
 					orderedProductDtos.Add(productDto);
 				}
@@ -313,7 +315,6 @@ public class PageService(
 		{
 			pageDto.Products = [];
 		}
-
 		// Map page files
 		if (page.FileIds?.Count > 0)
 		{
@@ -329,7 +330,6 @@ public class PageService(
 		{
 			pageDto.Files = [];
 		}
-
 		// Map documents
 		if (page.DocumentIds?.Count > 0)
 		{
@@ -345,6 +345,10 @@ public class PageService(
 		{
 			pageDto.Documents = [];
 		}
+		// Map MainImage
+		pageDto.MainImage = page.MainImageId.HasValue && fileLookup.TryGetValue(page.MainImageId.Value, out var pageMainImageDto)
+			? pageMainImageDto
+			: null;
 	}
 
 	/// <summary>
@@ -366,6 +370,9 @@ public class PageService(
 
 			if (page.FileIds?.Count > 0)
 				foreach (var id in page.FileIds) allFileIds.Add(id);
+
+			if (page.MainImageId.HasValue)
+				allFileIds.Add(page.MainImageId.Value);
 
 			if (page.DocumentIds?.Count > 0)
 				foreach (var id in page.DocumentIds) allDocumentIds.Add(id);
@@ -482,12 +489,12 @@ public class PageService(
 						productDto.Files = [];
 					}
 					// Map ProductMainImage
-					productDto.ProductMainImage = product.ProductMainImageId.HasValue && fileLookup.TryGetValue(product.ProductMainImageId.Value, out var mainImageDto)
-						? mainImageDto
+					productDto.ProductMainImage = product.ProductMainImageId.HasValue && fileLookup.TryGetValue(product.ProductMainImageId.Value, out var productMainImageDto)
+						? productMainImageDto
 						: null;
 					// Map ProductImage
-					productDto.ProductImage = product.ProductImageId.HasValue && fileLookup.TryGetValue(product.ProductImageId.Value, out var imageDto)
-						? imageDto
+					productDto.ProductImage = product.ProductImageId.HasValue && fileLookup.TryGetValue(product.ProductImageId.Value, out var productImageDto)
+						? productImageDto
 						: null;
 					orderedProductDtos.Add(productDto);
 				}
@@ -498,7 +505,6 @@ public class PageService(
 		{
 			pageDto.Products = [];
 		}
-
 		// Map page files
 		if (page.FileIds?.Count > 0)
 		{
@@ -514,7 +520,6 @@ public class PageService(
 		{
 			pageDto.Files = [];
 		}
-
 		// Map documents
 		if (page.DocumentIds?.Count > 0)
 		{
@@ -530,6 +535,10 @@ public class PageService(
 		{
 			pageDto.Documents = [];
 		}
+		// Map MainImage
+		pageDto.MainImage = page.MainImageId.HasValue && fileLookup.TryGetValue(page.MainImageId.Value, out var pageMainImageDto)
+			? pageMainImageDto
+			: null;
 	}
 
 	#endregion

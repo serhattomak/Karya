@@ -17,6 +17,7 @@ public record UpdatePageDto(
 	string? BackgroundImageUrl,
 	string? BannerImageUrl,
 	string? MainImageUrl,
+	Guid? MainImageId,
 	List<Guid>? FileIds,
 	List<Guid>? ProductIds,
 	List<Guid>? DocumentIds,
