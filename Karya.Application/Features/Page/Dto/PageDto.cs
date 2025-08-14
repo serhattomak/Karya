@@ -17,8 +17,10 @@ public class PageDto
 	public List<string>? ListTitles { get; set; } = [];
 	public List<string>? ListItems { get; set; } = [];
 	public List<string>? Urls { get; set; } = [];
+	public List<string>? VideoUrls { get; set; } = [];
 	public string? BackgroundImageUrl { get; set; }
 	public string? BannerImageUrl { get; set; }
+	public string? MainImageUrl { get; set; }
 	public List<Guid>? FileIds { get; set; } = [];
 	public List<Guid>? ProductIds { get; set; } = [];
 	public List<Guid>? DocumentIds { get; set; } = [];

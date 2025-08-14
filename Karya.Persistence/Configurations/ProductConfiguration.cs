@@ -32,7 +32,14 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 			.HasMaxLength(500)
 			.HasColumnType("nvarchar(500)");
 
+		builder.Property(p => p.MainImageUrl)
+			.HasMaxLength(500)
+			.HasColumnType("nvarchar(500)");
+
 		builder.Property(p => p.ProductImageId)
+			.HasColumnType("uniqueidentifier");
+
+		builder.Property(p => p.ProductMainImageId)
 			.HasColumnType("uniqueidentifier");
 
 		builder.Property(p => p.Titles)
@@ -61,6 +68,11 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Urls)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
+			.HasColumnType("NVARCHAR(MAX)")
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
+
+		builder.Property(p => p.VideoUrls)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());

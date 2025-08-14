@@ -12,6 +12,9 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 		builder.ToTable("Pages");
 		builder.HasKey(p => p.Id);
 
+		builder.Property(p => p.PageType)
+			.IsRequired();
+
 		builder.Property(p => p.Name)
 			.IsRequired()
 			.HasMaxLength(200);
@@ -33,6 +36,10 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.HasColumnType("nvarchar(500)");
 
 		builder.Property(p => p.BannerImageUrl)
+			.HasMaxLength(500)
+			.HasColumnType("nvarchar(500)");
+
+		builder.Property(p => p.MainImageUrl)
 			.HasMaxLength(500)
 			.HasColumnType("nvarchar(500)");
 
@@ -62,6 +69,11 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Urls)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
+			.HasColumnType("NVARCHAR(MAX)")
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
+
+		builder.Property(p => p.VideoUrls)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
