@@ -200,6 +200,9 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 			if (product.DocumentIds?.Count > 0)
 				foreach (var id in product.DocumentIds) allDocumentIds.Add(id);
+
+			if (product.ProductMainImageId.HasValue)
+				allFileIds.Add(product.ProductMainImageId.Value);
 		}
 
 		var files = allFileIds.Count > 0
@@ -290,6 +293,11 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 		{
 			productDto.ProductImages = [];
 		}
+
+		// Product Main Image (single)
+		productDto.ProductMainImage = product.ProductMainImageId.HasValue && fileDtoLookup.TryGetValue(product.ProductMainImageId.Value, out var productMainImage)
+			? productMainImage
+			: null;
 
 		// Product Image (single)
 		productDto.ProductImage = product.ProductImageId.HasValue && fileDtoLookup.TryGetValue(product.ProductImageId.Value, out var productImage)

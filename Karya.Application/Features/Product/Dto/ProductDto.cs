@@ -25,6 +25,7 @@ public class ProductDto()
 	public List<Guid>? DocumentIds { get; set; } = [];
 	public List<FileDto> Files { get; set; } = [];
 	public FileDto? ProductImage { get; set; }
+	public FileDto? ProductMainImage { get; set; }
 	public List<FileDto> DocumentImages { get; set; } = [];
 	public List<FileDto> ProductImages { get; set; } = [];
 	public List<DocumentDto> Documents { get; set; } = [];
