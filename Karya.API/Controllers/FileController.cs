@@ -21,6 +21,12 @@ namespace Karya.API.Controllers
 		[RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
 		public async Task<IActionResult> Upload([FromForm] IFormFile file) => CreateActionResult(await service.SaveFileAsync(file));
 
+		[HttpPost("upload-multiple")]
+		[Authorize(Roles = "Admin")]
+		[RequestSizeLimit(100_000_000)]
+		[RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
+		public async Task<IActionResult> UploadMultiple([FromForm] List<IFormFile> files) => CreateActionResult(await service.SaveFilesAsync(files));
+
 		[HttpPost]
 		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Create(CreateFileDto fileDto) => CreateActionResult(await service.CreateAsync(fileDto));

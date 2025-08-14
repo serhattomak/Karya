@@ -42,7 +42,9 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 		if (existingFile != null)
 		{
 			var existingFileDto = mapper.Map<FileDto>(existingFile);
-			return Result<FileDto>.Success(existingFileDto);
+			var result = Result<FileDto>.Success(existingFileDto, HttpStatusCode.OK);
+			result.ErrorMessage = ["Dosya zaten sistemde mevcut, otomatik olarak seçildi."];
+			return result;
 		}
 
 		var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
@@ -71,7 +73,7 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 		await repository.AddAsync(fileEntity);
 		await repository.SaveChangesAsync();
 
-		var result = new FileDto
+		var resultDto = new FileDto
 		{
 			Id = fileEntity.Id,
 			Name = fileEntity.Name,
@@ -79,7 +81,7 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 			ContentType = file.ContentType,
 			Size = fileEntity.Size
 		};
-		return Result<FileDto>.Success(result);
+		return Result<FileDto>.Success(resultDto);
 	}
 
 	public async Task<Result<FileDto>> CreateAsync(CreateFileDto fileDto)
@@ -123,6 +125,30 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 		repository.UpdateAsync(file);
 		await repository.SaveChangesAsync();
 		return Result.Success(HttpStatusCode.NoContent);
+	}
+
+	public async Task<Result<List<FileDto>>> SaveFilesAsync(List<IFormFile> files)
+	{
+		var fileDtos = new List<FileDto>();
+		var errorMessages = new List<string>();
+		foreach (var file in files)
+		{
+			var result = await SaveFileAsync(file);
+			if (result.IsSuccess && result.Data != null)
+			{
+				fileDtos.Add(result.Data);
+				if (result.ErrorMessage != null && result.ErrorMessage.Count > 0)
+					errorMessages.AddRange(result.ErrorMessage);
+			}
+			else if (result.ErrorMessage != null)
+			{
+				errorMessages.AddRange(result.ErrorMessage);
+			}
+		}
+		var finalResult = Result<List<FileDto>>.Success(fileDtos);
+		if (errorMessages.Count > 0)
+			finalResult.ErrorMessage = errorMessages;
+		return finalResult;
 	}
 
 	private static async Task<string> ComputeFileHashAsync(Stream stream)
