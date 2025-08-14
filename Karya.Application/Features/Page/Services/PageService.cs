@@ -248,12 +248,16 @@ public class PageService(
 			documentLookup[document.Id] = mapper.Map<DocumentDto>(document);
 		}
 
-		// Collect product file IDs
+		// Collect product file IDs (include ProductImageId and ProductMainImageId)
 		var productFileIds = new HashSet<Guid>();
 		foreach (var product in products)
 		{
 			if (product.FileIds?.Count > 0)
 				foreach (var id in product.FileIds) productFileIds.Add(id);
+			if (product.ProductImageId.HasValue)
+				productFileIds.Add(product.ProductImageId.Value);
+			if (product.ProductMainImageId.HasValue)
+				productFileIds.Add(product.ProductMainImageId.Value);
 		}
 
 		// Fetch product files if needed
@@ -292,7 +296,14 @@ public class PageService(
 					{
 						productDto.Files = [];
 					}
-
+					// Map ProductMainImage
+					productDto.ProductMainImage = product.ProductMainImageId.HasValue && fileLookup.TryGetValue(product.ProductMainImageId.Value, out var mainImageDto)
+						? mainImageDto
+						: null;
+					// Map ProductImage
+					productDto.ProductImage = product.ProductImageId.HasValue && fileLookup.TryGetValue(product.ProductImageId.Value, out var imageDto)
+						? imageDto
+						: null;
 					orderedProductDtos.Add(productDto);
 				}
 			}
@@ -470,7 +481,14 @@ public class PageService(
 					{
 						productDto.Files = [];
 					}
-
+					// Map ProductMainImage
+					productDto.ProductMainImage = product.ProductMainImageId.HasValue && fileLookup.TryGetValue(product.ProductMainImageId.Value, out var mainImageDto)
+						? mainImageDto
+						: null;
+					// Map ProductImage
+					productDto.ProductImage = product.ProductImageId.HasValue && fileLookup.TryGetValue(product.ProductImageId.Value, out var imageDto)
+						? imageDto
+						: null;
 					orderedProductDtos.Add(productDto);
 				}
 			}
