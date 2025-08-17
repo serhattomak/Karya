@@ -3,6 +3,7 @@
 public record CreateProductDto(
 	string Name,
 	string Slug,
+	string? HomePageSubtitle,
 	List<string> Titles,
 	List<string>? Subtitles,
 	List<string>? Descriptions,
@@ -12,6 +13,7 @@ public record CreateProductDto(
 	List<string>? VideoUrls,
 	string? BannerImageUrl,
 	string? MainImageUrl,
+	bool ShowContact,
 	Guid? ProductImageId,
 	Guid? ProductMainImageId,
 	List<Guid>? DocumentImageIds,

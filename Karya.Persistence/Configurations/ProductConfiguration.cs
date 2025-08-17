@@ -20,6 +20,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 			.IsRequired()
 			.HasMaxLength(250);
 
+		builder.Property(p => p.HomePageSubtitle)
+			.HasMaxLength(500)
+			.HasColumnType("nvarchar(500)");
+
 		builder.HasIndex(p => p.Name)
 			.IsUnique()
 			.HasDatabaseName("IX_Products_Name");
@@ -35,6 +39,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 		builder.Property(p => p.MainImageUrl)
 			.HasMaxLength(500)
 			.HasColumnType("nvarchar(500)");
+
+		builder.Property(p => p.ShowContact)
+			.HasColumnType("bit")
+			.HasDefaultValue(false);
 
 		builder.Property(p => p.ProductImageId)
 			.HasColumnType("uniqueidentifier");

@@ -183,7 +183,7 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 		var allFileIds = new HashSet<Guid>();
 		var allDocumentIds = new HashSet<Guid>();
-
+		var allPreviewImageFileIds = new HashSet<Guid>();
 		foreach (var product in products)
 		{
 			if (product.FileIds?.Count > 0)
@@ -198,20 +198,25 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 			if (product.ProductImageId.HasValue)
 				allFileIds.Add(product.ProductImageId.Value);
 
-			if (product.DocumentIds?.Count > 0)
-				foreach (var id in product.DocumentIds) allDocumentIds.Add(id);
-
 			if (product.ProductMainImageId.HasValue)
 				allFileIds.Add(product.ProductMainImageId.Value);
+
+			if (product.DocumentIds?.Count > 0)
+				foreach (var id in product.DocumentIds) allDocumentIds.Add(id);
 		}
-
-		var files = allFileIds.Count > 0
-			? await fileRepository.GetByIdsAsync([.. allFileIds])
-			: new List<Domain.Entities.File>();
-
+		// Collect PreviewImageFileIds from documents
 		var documents = allDocumentIds.Count > 0
 			? await documentRepository.GetByIdsAsync([.. allDocumentIds])
 			: new List<Domain.Entities.Document>();
+		foreach (var document in documents)
+		{
+			if (document.PreviewImageFileId.HasValue)
+				allFileIds.Add(document.PreviewImageFileId.Value);
+		}
+		// Fetch all files (including preview images)
+		var files = allFileIds.Count > 0
+			? await fileRepository.GetByIdsAsync([.. allFileIds])
+			: new List<Domain.Entities.File>();
 
 		var fileDtoLookup = new Dictionary<Guid, FileDto>(files.Count);
 		var documentDtoLookup = new Dictionary<Guid, DocumentDto>(documents.Count);
@@ -223,7 +228,10 @@ public class ProductService(IMapper mapper, IProductRepository repository, IFile
 
 		foreach (var document in documents)
 		{
-			documentDtoLookup[document.Id] = mapper.Map<DocumentDto>(document);
+			var dto = mapper.Map<DocumentDto>(document);
+			if (document.PreviewImageFileId.HasValue && fileDtoLookup.TryGetValue(document.PreviewImageFileId.Value, out var previewFileDto))
+				dto.PreviewImageFile = previewFileDto;
+			documentDtoLookup[document.Id] = dto;
 		}
 
 		var productLookup = new Dictionary<Guid, Domain.Entities.Product>(products.Count);
