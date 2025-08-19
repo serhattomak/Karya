@@ -13,6 +13,7 @@ public record CreatePageDto(
 	List<string>? ListItems,
 	List<string>? Urls,
 	List<string>? VideoUrls,
+	List<string>? VideoDescriptions,
 	string? BackgroundImageUrl,
 	string? BannerImageUrl,
 	string? MainImageUrl,

@@ -85,6 +85,11 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 			.HasColumnType("NVARCHAR(MAX)")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
+		builder.Property(p => p.VideoDescriptions)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
+			.HasColumnType("NVARCHAR(MAX)")
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
+
 		builder.Property(p => p.DocumentImageIds)
 			.HasConversion(JsonConversionHelper.GetGuidListConverter())
 			.HasColumnType("NVARCHAR(MAX)")

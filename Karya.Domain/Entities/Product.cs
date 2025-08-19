@@ -13,7 +13,8 @@ public class Product : BaseEntity
 	public List<string>? ListTitles { get; set; } = [];
 	public List<string>? ListItems { get; set; } = [];
 	public List<string>? Urls { get; set; } = [];
-	public List<string>? VideoUrls { get; set; } = [];
+	public List<string>? VideoUrls { get; set; }
+	public List<string>? VideoDescriptions { get; set; }
 	public string? BannerImageUrl { get; set; }
 	public string? MainImageUrl { get; set; }
 	public bool ShowContact { get; set; } = false;

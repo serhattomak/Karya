@@ -11,6 +11,7 @@ public record CreateProductDto(
 	List<string>? ListItems,
 	List<string>? Urls,
 	List<string>? VideoUrls,
+	List<string>? VideoDescriptions,
 	string? BannerImageUrl,
 	string? MainImageUrl,
 	bool ShowContact,
