@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 
 namespace Karya.Application.Features.File.Services;
 
-public class FileService(IMapper mapper, IFileRepository repository, IProductRepository productRepository) : IFileService
+public class FileService(IMapper mapper, IFileRepository repository, IProductRepository productRepository, IPageRepository pageRepository) : IFileService
 {
 	public async Task<Result<List<FileDto>>> GetAllAsync()
 	{
@@ -114,10 +114,27 @@ public class FileService(IMapper mapper, IFileRepository repository, IProductRep
 			System.IO.File.Delete(filePath);
 		}
 		var products = (await productRepository.GetAllProductsAsync()).ToList();
-		foreach (var product in products.Where(p => p.FileIds != null && p.FileIds.Contains(id)))
+		foreach (var product in products)
 		{
-			product.FileIds!.Remove(id);
-			productRepository.UpdateAsync(product);
+			bool updated = false;
+			if (product.FileIds != null && product.FileIds.Contains(id))
+			{
+				product.FileIds.Remove(id);
+				updated = true;
+			}
+			if (product.ProductDetailImageIds != null && product.ProductDetailImageIds.Contains(id))
+			{
+				product.ProductDetailImageIds.Remove(id);
+				updated = true;
+			}
+			if (updated)
+				productRepository.UpdateAsync(product);
+		}
+		var pages = await pageRepository.GetPagedAsync(new PagedRequest { PageIndex = 1, PageSize = int.MaxValue });
+		foreach (var page in pages.Items.Where(p => p.FileIds != null && p.FileIds.Contains(id)))
+		{
+			page.FileIds!.Remove(id);
+			pageRepository.UpdateAsync(page);
 		}
 		repository.DeleteAsync(file);
 		await repository.SaveChangesAsync();

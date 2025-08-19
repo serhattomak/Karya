@@ -14,7 +14,9 @@ public class DocumentService(
 	IMapper mapper,
 	IDocumentRepository repository,
 	IFileRepository fileRepository,
-	IFileService fileService) : IDocumentService
+	IFileService fileService,
+	IProductRepository productRepository,
+	IPageRepository pageRepository) : IDocumentService
 {
 	public async Task<Result<PagedResult<DocumentDto>>> GetAllAsync(PagedRequest request)
 	{
@@ -252,6 +254,20 @@ public class DocumentService(
 		var document = await repository.GetByIdAsync(id);
 		if (document == null)
 			return Result.Failure("Document not found");
+
+		var products = (await productRepository.GetAllProductsAsync()).ToList();
+		foreach (var product in products.Where(p => p.DocumentIds != null && p.DocumentIds.Contains(id)))
+		{
+			product.DocumentIds!.Remove(id);
+			productRepository.UpdateAsync(product);
+		}
+
+		var pages = await pageRepository.GetPagedAsync(new PagedRequest { PageIndex = 1, PageSize = int.MaxValue });
+		foreach (var page in pages.Items.Where(p => p.DocumentIds != null && p.DocumentIds.Contains(id)))
+		{
+			page.DocumentIds!.Remove(id);
+			pageRepository.UpdateAsync(page);
+		}
 
 		repository.DeleteAsync(document);
 		await repository.SaveChangesAsync();
