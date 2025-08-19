@@ -213,24 +213,18 @@ public class PageService(
 		if (page.DocumentIds?.Count > 0)
 			foreach (var id in page.DocumentIds) allDocumentIds.Add(id);
 
-		// Parallel data fetching
-		var productsTask = allProductIds.Count > 0
-			? productRepository.GetByIdsAsync(allProductIds)
-			: Task.FromResult(new List<Domain.Entities.Product>());
+		// Ardışık data fetching
+		var products = allProductIds.Count > 0
+			? await productRepository.GetByIdsAsync(allProductIds)
+			: new List<Domain.Entities.Product>();
 
-		var filesTask = allFileIds.Count > 0
-			? fileRepository.GetByIdsAsync(allFileIds)
-			: Task.FromResult(new List<Domain.Entities.File>());
+		var files = allFileIds.Count > 0
+			? await fileRepository.GetByIdsAsync(allFileIds)
+			: new List<Domain.Entities.File>();
 
-		var documentsTask = allDocumentIds.Count > 0
-			? documentRepository.GetByIdsAsync(allDocumentIds)
-			: Task.FromResult(new List<Domain.Entities.Document>());
-
-		await Task.WhenAll(productsTask, filesTask, documentsTask);
-
-		var products = await productsTask;
-		var files = await filesTask;
-		var documents = await documentsTask;
+		var documents = allDocumentIds.Count > 0
+			? await documentRepository.GetByIdsAsync(allDocumentIds)
+			: new List<Domain.Entities.Document>();
 
 		// Create lookup dictionaries
 		var productLookup = new Dictionary<Guid, Domain.Entities.Product>(products.Count);
@@ -263,7 +257,7 @@ public class PageService(
 				productFileIds.Add(product.ProductMainImageId.Value);
 		}
 
-		// Fetch product files if needed
+		// Fetch product files if needed (ardışık)
 		if (productFileIds.Count > 0)
 		{
 			var productFiles = await fileRepository.GetByIdsAsync(productFileIds);
@@ -378,24 +372,18 @@ public class PageService(
 				foreach (var id in page.DocumentIds) allDocumentIds.Add(id);
 		}
 
-		// Parallel data fetching
-		var productsTask = allProductIds.Count > 0
-			? productRepository.GetByIdsAsync(allProductIds)
-			: Task.FromResult(new List<Domain.Entities.Product>());
+		// Ardışık data fetching
+		var products = allProductIds.Count > 0
+			? await productRepository.GetByIdsAsync(allProductIds)
+			: new List<Domain.Entities.Product>();
 
-		var filesTask = allFileIds.Count > 0
-			? fileRepository.GetByIdsAsync(allFileIds)
-			: Task.FromResult(new List<Domain.Entities.File>());
+		var files = allFileIds.Count > 0
+			? await fileRepository.GetByIdsAsync(allFileIds)
+			: new List<Domain.Entities.File>();
 
-		var documentsTask = allDocumentIds.Count > 0
-			? documentRepository.GetByIdsAsync(allDocumentIds)
-			: Task.FromResult(new List<Domain.Entities.Document>());
-
-		await Task.WhenAll(productsTask, filesTask, documentsTask);
-
-		var products = await productsTask;
-		var files = await filesTask;
-		var documents = await documentsTask;
+		var documents = allDocumentIds.Count > 0
+			? await documentRepository.GetByIdsAsync(allDocumentIds)
+			: new List<Domain.Entities.Document>();
 
 		// Collect product file IDs
 		var productFileIds = new HashSet<Guid>();
@@ -405,7 +393,7 @@ public class PageService(
 				foreach (var id in product.FileIds) productFileIds.Add(id);
 		}
 
-		// Fetch additional product files
+		// Fetch additional product files (ardışık)
 		var additionalFiles = productFileIds.Count > 0
 			? await fileRepository.GetByIdsAsync(productFileIds)
 			: new List<Domain.Entities.File>();
