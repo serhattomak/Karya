@@ -10,6 +10,7 @@ public record CreateProductDto(
 	List<string>? ListTitles,
 	List<string>? ListItems,
 	List<string>? Urls,
+	List<string>? VideoTitles,
 	List<string>? VideoUrls,
 	List<string>? VideoDescriptions,
 	string? BannerImageUrl,

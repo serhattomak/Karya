@@ -76,6 +76,11 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 			.HasColumnType("NVARCHAR(MAX)")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
+		builder.Property(p => p.VideoTitles)
+			.HasConversion(JsonConversionHelper.GetListConverter<string>())
+			.HasColumnType("NVARCHAR(MAX)")
+			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
+
 		builder.Property(p => p.VideoUrls)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
 			.HasColumnType("NVARCHAR(MAX)")
