@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Karya.Persistence.Repositories;
 
-public class EfRepository<T>(AppIdentityDbContext context) : IRepository<T>
+public class EfRepository<T>(AppDbContext context) : IRepository<T>
 	where T : class
 {
-	protected readonly AppIdentityDbContext _context = context;
+	protected readonly AppDbContext _context = context;
 	private readonly DbSet<T> _entities = context.Set<T>();
+
 	public async Task<T?> GetByIdAsync(Guid id)
 	{
 		return await _entities.FindAsync(id);

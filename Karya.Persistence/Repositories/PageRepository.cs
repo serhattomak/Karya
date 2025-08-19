@@ -7,9 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Karya.Persistence.Repositories;
 
-public class PageRepository(AppIdentityDbContext context) : EfRepository<Page>(context), IPageRepository
+public class PageRepository(AppDbContext context) : EfRepository<Page>(context), IPageRepository
 {
-
 	public async Task<List<Page>> GetAllByTypeAsync(PageTypes type)
 	{
 		var pages = context.Pages.AsNoTracking()
@@ -19,7 +18,11 @@ public class PageRepository(AppIdentityDbContext context) : EfRepository<Page>(c
 
 	public async Task<PagedResult<Page>> GetPagedByTypeAsync(PageTypes type, PagedRequest request)
 	{
-		var query = context.Pages.Where(p => p.PageType == type);
+		var query = context.Pages
+			.AsNoTracking()
+			.Where(p => p.PageType == type &&
+					   p.Status != BaseStatuses.Deleted &&
+					   p.Status != BaseStatuses.Inactive);
 
 		if (!string.IsNullOrEmpty(request.SortColumn))
 		{
@@ -64,4 +67,37 @@ public class PageRepository(AppIdentityDbContext context) : EfRepository<Page>(c
 		return new PagedResult<Page>(items, totalCount, request.PageIndex, request.PageSize);
 	}
 
+	public async Task<Page?> GetByNameAsync(string name)
+	{
+		return await context.Pages
+			.AsNoTracking()
+			.FirstOrDefaultAsync(p => p.Name == name &&
+									p.Status != BaseStatuses.Deleted &&
+									p.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<Page?> GetBySlugAsync(string slug)
+	{
+		return await context.Pages
+			.AsNoTracking()
+			.FirstOrDefaultAsync(p => p.Slug == slug &&
+									p.Status != BaseStatuses.Deleted &&
+									p.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<Page?> GetByNameForUpdateAsync(string name)
+	{
+		return await context.Pages
+			.FirstOrDefaultAsync(p => p.Name == name &&
+									p.Status != BaseStatuses.Deleted &&
+									p.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<Page?> GetBySlugForUpdateAsync(string slug)
+	{
+		return await context.Pages
+			.FirstOrDefaultAsync(p => p.Slug == slug &&
+									p.Status != BaseStatuses.Deleted &&
+									p.Status != BaseStatuses.Inactive);
+	}
 }

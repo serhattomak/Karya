@@ -4,7 +4,7 @@ using Karya.Persistence.Context;
 
 namespace Karya.Persistence.Repositories;
 
-public class ContactRepository(AppIdentityDbContext context) : EfRepository<Contact>(context), IContactRepository
+public class ContactRepository(AppDbContext context) : EfRepository<Contact>(context), IContactRepository
 {
 
 }

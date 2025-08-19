@@ -12,9 +12,11 @@ public static class PersistenceExtensions
 	public static IServiceCollection AddPersistenceExtensions(this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		services.AddDbContext<AppIdentityDbContext>(options =>
-			options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+		services.AddDbContext<AppDbContext>(options =>
+			options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
 		services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+
 		var assembly = typeof(PersistenceExtensions).Assembly;
 		var repositoryTypes = assembly.GetTypes()
 			.Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
@@ -29,6 +31,7 @@ public static class PersistenceExtensions
 				services.AddScoped(interfaceType, implementationType);
 			}
 		}
+
 		return services;
 	}
 }

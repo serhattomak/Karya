@@ -6,7 +6,7 @@ using File = Karya.Domain.Entities.File;
 
 namespace Karya.Persistence.Repositories;
 
-public class FileRepository(AppIdentityDbContext context) : EfRepository<File>(context), IFileRepository
+public class FileRepository(AppDbContext context) : EfRepository<File>(context), IFileRepository
 {
 	public async Task<IQueryable<File>> GetAllFilesAsync()
 	{
@@ -14,8 +14,31 @@ public class FileRepository(AppIdentityDbContext context) : EfRepository<File>(c
 			.Where(x => x.Status != BaseStatuses.Deleted && x.Status != BaseStatuses.Inactive);
 		return files;
 	}
+
 	public async Task<List<File>> GetByIdsAsync(IEnumerable<Guid> ids)
 	{
-		return await _context.Files.Where(f => ids.Contains(f.Id)).ToListAsync();
+		return await context.Files
+			.AsNoTracking()
+			.Where(f => ids.Contains(f.Id) &&
+						f.Status != BaseStatuses.Deleted &&
+						f.Status != BaseStatuses.Inactive)
+			.ToListAsync();
+	}
+
+	public async Task<File?> GetByHashAsync(string hash)
+	{
+		return await context.Files
+			.AsNoTracking()
+			.FirstOrDefaultAsync(f => f.Hash == hash &&
+									  f.Status != BaseStatuses.Deleted &&
+									  f.Status != BaseStatuses.Inactive);
+	}
+
+	public async Task<File?> GetByHashForUpdateAsync(string hash)
+	{
+		return await context.Files
+			.FirstOrDefaultAsync(f => f.Hash == hash &&
+									  f.Status != BaseStatuses.Deleted &&
+									  f.Status != BaseStatuses.Inactive);
 	}
 }
