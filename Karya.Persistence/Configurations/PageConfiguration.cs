@@ -33,82 +33,79 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
 
 		builder.Property(p => p.BackgroundImageUrl)
 			.HasMaxLength(500)
-			.HasColumnType("nvarchar(500)");
+			.HasColumnType("varchar(500)");
 
 		builder.Property(p => p.BannerImageUrl)
 			.HasMaxLength(500)
-			.HasColumnType("nvarchar(500)");
+			.HasColumnType("varchar(500)");
 
 		builder.Property(p => p.MainImageUrl)
 			.HasMaxLength(500)
-			.HasColumnType("nvarchar(500)");
-
-		builder.Property(p => p.MainImageId)
-			.HasColumnType("uniqueidentifier");
+			.HasColumnType("varchar(500)");
 
 		builder.Property(p => p.Titles)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Subtitles)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Descriptions)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.ListTitles)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.ListItems)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.Urls)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.VideoTitles)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.VideoUrls)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.VideoDescriptions)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.FileIds)
 			.HasConversion(JsonConversionHelper.GetGuidListConverter())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetGuidListComparer());
 
 		builder.Property(p => p.ProductIds)
 			.HasConversion(JsonConversionHelper.GetGuidListConverter())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetGuidListComparer());
 
 		builder.Property(p => p.AdditionalFields)
 			.HasConversion(JsonConversionHelper.GetListConverter<string>())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetListComparer<string>());
 
 		builder.Property(p => p.DocumentIds)
 			.HasConversion(JsonConversionHelper.GetGuidListConverter())
-			.HasColumnType("NVARCHAR(MAX)")
+			.HasColumnType("text")
 			.Metadata.SetValueComparer(JsonConversionHelper.GetGuidListComparer());
 	}
 }

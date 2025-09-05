@@ -5,11 +5,19 @@ using Karya.Persistence.Context;
 using Karya.Persistence.Extensions;
 using Karya.Persistence.Seed;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+{
+	builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
 
 builder.Services.AddControllers();
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -67,12 +75,34 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureExtensions();
 builder.Services.AddPersistenceExtensions(builder.Configuration);
 
+var allowedOrigins = builder.Configuration["Cors__AllowedOrigins"];
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowReact",
-		policy => policy.WithOrigins("http://localhost:3000")
+	options.AddPolicy("AllowWeb", policy =>
+		policy
+			.SetIsOriginAllowed(origin =>
+			{
+				try
+				{
+					if (!string.IsNullOrWhiteSpace(allowedOrigins))
+					{
+						var host = new Uri(origin).Host;
+						return allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+							.Any(p => host.Equals(new Uri(p).Host, StringComparison.OrdinalIgnoreCase)
+									  || host.EndsWith(new Uri(p).Host, StringComparison.OrdinalIgnoreCase));
+					}
+					var h = new Uri(origin).Host;
+					return h.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase)
+						   || h.EndsWith(".railway.app", StringComparison.OrdinalIgnoreCase)
+						   || h.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+						   || h.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase);
+				}
+				catch { return false; }
+			})
 			.AllowAnyHeader()
-			.AllowAnyMethod());
+			.AllowAnyMethod()
+			.DisallowCredentials()
+	);
 });
 
 builder.Services.Configure<FormOptions>(options =>
@@ -97,6 +127,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
 	var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+	await context.Database.MigrateAsync();
 	await UserSeed.SeedAsync(context);
 }
 
@@ -112,13 +143,20 @@ if (app.Environment.IsDevelopment())
 	});
 }
 
-app.UseCors("AllowReact");
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+	ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
+});
+
+app.UseCors("AllowWeb");
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapControllers();
 
