@@ -22,7 +22,6 @@ if (!string.IsNullOrWhiteSpace(port))
 builder.Services.AddControllers();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// OpenAPI with JWT Security
 builder.Services.AddOpenApi(options =>
 {
 	options.AddDocumentTransformer((document, context, cancellationToken) =>
@@ -34,7 +33,6 @@ builder.Services.AddOpenApi(options =>
 			Description = "Karya Project API with JWT Authentication"
 		};
 
-		// JWT Security Scheme
 		document.Components ??= new OpenApiComponents();
 		document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
 		{
@@ -47,7 +45,6 @@ builder.Services.AddOpenApi(options =>
 			}
 		};
 
-		// Global security requirement
 		document.SecurityRequirements = new List<OpenApiSecurityRequirement>
 		{
 			new OpenApiSecurityRequirement
@@ -75,33 +72,31 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureExtensions();
 builder.Services.AddPersistenceExtensions(builder.Configuration);
 
-var allowedOrigins = builder.Configuration["Cors__AllowedOrigins"];
+string[] fromJson =
+	builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
+string[] fromEnvCsv =
+	(builder.Configuration["Cors__AllowedOrigins"] ?? string.Empty)
+		.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+var finalAllowedOrigins =
+	(fromJson.Length > 0 ? fromJson : fromEnvCsv.Length > 0 ? fromEnvCsv : new[]
+	{
+		"https://karyayapi.com",
+		"https://www.karyayapi.com"
+	})
+	.Distinct(StringComparer.OrdinalIgnoreCase)
+	.ToArray();
+
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowWeb", policy =>
 		policy
-			.SetIsOriginAllowed(origin =>
-			{
-				try
-				{
-					if (!string.IsNullOrWhiteSpace(allowedOrigins))
-					{
-						var host = new Uri(origin).Host;
-						return allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-							.Any(p => host.Equals(new Uri(p).Host, StringComparison.OrdinalIgnoreCase)
-									  || host.EndsWith(new Uri(p).Host, StringComparison.OrdinalIgnoreCase));
-					}
-					var h = new Uri(origin).Host;
-					return h.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase)
-						   || h.EndsWith(".railway.app", StringComparison.OrdinalIgnoreCase)
-						   || h.Equals("localhost", StringComparison.OrdinalIgnoreCase)
-						   || h.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase);
-				}
-				catch { return false; }
-			})
+			.WithOrigins(finalAllowedOrigins)
 			.AllowAnyHeader()
 			.AllowAnyMethod()
 			.DisallowCredentials()
+			.SetPreflightMaxAge(TimeSpan.FromHours(1))
 	);
 });
 
@@ -148,10 +143,11 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 	ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
 });
 
+app.UseHttpsRedirection();
+
 app.UseCors("AllowWeb");
 
 app.UseStaticFiles();
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
