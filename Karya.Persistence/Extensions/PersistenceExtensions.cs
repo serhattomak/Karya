@@ -13,7 +13,7 @@ public static class PersistenceExtensions
 		IConfiguration configuration)
 	{
 		services.AddDbContext<AppDbContext>(options =>
-			options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+			options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
 		services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 

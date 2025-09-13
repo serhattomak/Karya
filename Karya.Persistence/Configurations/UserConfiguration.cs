@@ -14,17 +14,17 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.HasKey(u => u.Id);
 
 		builder.Property(u => u.Id)
-			.HasDefaultValueSql("gen_random_uuid()");
+			.HasDefaultValueSql("NEWID()");
 
 		builder.Property(u => u.Username)
 			.IsRequired()
 			.HasMaxLength(50)
-			.HasColumnType("varchar(50)");
+			.HasColumnType("nvarchar(50)");
 
 		builder.Property(u => u.PasswordHash)
 			.IsRequired()
 			.HasMaxLength(255)
-			.HasColumnType("varchar(255)");
+			.HasColumnType("nvarchar(255)");
 
 		builder.Property(u => u.Role)
 			.IsRequired()
@@ -37,10 +37,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 		// Base entity properties
 		builder.Property(u => u.CreatedDate)
 			.IsRequired()
-			.HasDefaultValueSql("CURRENT_TIMESTAMP");
+			.HasDefaultValueSql("GETUTCDATE()");
 
 		builder.Property(u => u.ModifiedDate)
-			.HasColumnType("timestamp with time zone");
+			.HasColumnType("datetime2");
 
 		// Sentinel value ile enum configuration
 		builder.Property(u => u.Status)

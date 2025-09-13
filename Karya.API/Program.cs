@@ -1,22 +1,23 @@
 using Karya.API.Extensions;
 using Karya.Application.Extensions;
 using Karya.Infrastructure.Extensions;
-using Karya.Persistence.Context;
 using Karya.Persistence.Extensions;
-using Karya.Persistence.Seed;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddEventLog(o => o.SourceName = "KaryaAPI");
 
-var port = Environment.GetEnvironmentVariable("PORT");
-if (!string.IsNullOrWhiteSpace(port))
+if (!builder.Environment.IsProduction())
 {
-	builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+	var port = Environment.GetEnvironmentVariable("PORT");
+	if (!string.IsNullOrWhiteSpace(port))
+	{
+		builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+	}
 }
 
 builder.Services.AddControllers();
@@ -32,7 +33,6 @@ builder.Services.AddOpenApi(options =>
 			Version = "v1",
 			Description = "Karya Project API with JWT Authentication"
 		};
-
 		document.Components ??= new OpenApiComponents();
 		document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
 		{
@@ -44,7 +44,6 @@ builder.Services.AddOpenApi(options =>
 				Description = "Enter your JWT token in the format: Bearer {token}"
 			}
 		};
-
 		document.SecurityRequirements = new List<OpenApiSecurityRequirement>
 		{
 			new OpenApiSecurityRequirement
@@ -62,7 +61,6 @@ builder.Services.AddOpenApi(options =>
 				}
 			}
 		};
-
 		return Task.CompletedTask;
 	});
 });
@@ -74,11 +72,9 @@ builder.Services.AddPersistenceExtensions(builder.Configuration);
 
 string[] fromJson =
 	builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-
 string[] fromEnvCsv =
 	(builder.Configuration["Cors__AllowedOrigins"] ?? string.Empty)
 		.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
 var finalAllowedOrigins =
 	(fromJson.Length > 0 ? fromJson : fromEnvCsv.Length > 0 ? fromEnvCsv : new[]
 	{
@@ -111,7 +107,6 @@ builder.Services.Configure<IISServerOptions>(options =>
 {
 	options.MaxRequestBodySize = 100 * 1024 * 1024;
 });
-
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
 	options.Limits.MaxRequestBodySize = 100 * 1024 * 1024;
@@ -119,12 +114,21 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-	var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-	await context.Database.MigrateAsync();
-	await UserSeed.SeedAsync(context);
-}
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("### KaryaAPI started"));
+app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("### KaryaAPI stopping"));
+
+//try
+//{
+//	using var scope = app.Services.CreateScope();
+//	var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//	await context.Database.MigrateAsync();
+//	await UserSeed.SeedAsync(context);
+//}
+//catch (Exception ex)
+//{
+//	Console.Error.WriteLine("### MIGRATION ERROR: " + ex);
+//}
 
 if (app.Environment.IsDevelopment())
 {
@@ -151,8 +155,6 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapControllers();
 
